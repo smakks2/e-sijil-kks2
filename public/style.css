@@ -37,11 +37,11 @@ body {
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
 .header {
-  background: var(--biru);
-  color: var(--white);
+  background: var(--white);
+  color: var(--text);
   padding: 0 24px;
-  border-bottom: 3px solid var(--emas);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  border-bottom: 3px solid var(--biru);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
 }
 
 .header-inner {
@@ -62,10 +62,9 @@ body {
 }
 
 .logo-img {
-  height: 52px;
+  height: 60px;
   width: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1);
 }
 
 .header-title { text-align: right; }
@@ -73,10 +72,10 @@ body {
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: var(--white);
+  color: var(--biru);
 }
 .header-title h1 span { color: #f5a623; }
-.header-title p { font-size: 12px; color: #a0c4ff; margin-top: 2px; }
+.header-title p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
 /* ── Main Layout ─────────────────────────────────────────────────────────── */
 .main {
@@ -483,7 +482,7 @@ input.invalid {
   text-align: center;
   padding: 18px 16px;
   font-size: 13px;
-  border-top: 3px solid var(--emas);
+  border-top: 3px solid #f5a623;
 }
 
 .footer-note { font-size: 11px; color: #7ea8d8; margin-top: 4px; }

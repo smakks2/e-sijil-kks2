@@ -1,5 +1,5 @@
 # Sistem e-Sijil KKS2
-**Kementerian Kemajuan Luar Bandar dan Wilayah (KKLW)**
+**Kolej Komuniti Segamat 2**
 
 Sistem muat turun sijil elektronik (e-Sijil) untuk peserta program dan kursus KKS2.
 

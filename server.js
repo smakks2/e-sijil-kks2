@@ -4,6 +4,8 @@ const express    = require('express');
 const nodemailer = require('nodemailer');
 const path       = require('path');
 const mysql      = require('mysql2/promise');
+const bcrypt     = require('bcryptjs');
+const adminRoute = require('./routes/admin');
 const { janaSijilPDF } = require('./templates/sijil');
 
 const app  = express();
@@ -12,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/admin', adminRoute);
 
 // ── Sambungan Database MySQL ─────────────────────────────────────────────────
 const db = mysql.createPool({
@@ -25,17 +28,29 @@ const db = mysql.createPool({
   charset:            'utf8mb4'
 });
 
-// Uji sambungan semasa boot
+// Uji sambungan & setup awal semasa boot
 (async () => {
   try {
     const conn = await db.getConnection();
     console.log('✅ Berjaya sambung ke database MySQL');
     conn.release();
+
+    // Hash kata laluan admin jika masih PLACEHOLDER
+    const [admins] = await db.execute("SELECT id, password FROM admin WHERE username='admin'");
+    if (admins.length && admins[0].password === 'PLACEHOLDER') {
+      const adminPass = process.env.ADMIN_PASS || 'Admin@KKS2';
+      const hashed    = await bcrypt.hash(adminPass, 10);
+      await db.execute('UPDATE admin SET password=? WHERE username=?', [hashed, 'admin']);
+      console.log('✅ Kata laluan admin telah ditetapkan');
+    }
   } catch (err) {
     console.warn('⚠️  Gagal sambung MySQL — sistem akan guna mod fail JSON sebagai sandaran.');
     console.warn('   Ralat:', err.message);
   }
 })();
+
+// Kongsi db pool dengan route lain
+app.set('db', db);
 
 // ── Storan OTP sementara (in-memory) ────────────────────────────────────────
 // Kunci: emel, Nilai: { kod, expiry }

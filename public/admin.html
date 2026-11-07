@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Admin | e-Sijil KKS2</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── Admin-specific ── */
+    body { background: #f0f4fa; }
+
+    .admin-layout { display: flex; min-height: 100vh; flex-direction: column; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px; background: var(--biru); color: var(--white);
+      display: flex; flex-direction: column; flex-shrink: 0;
+      position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+      transition: transform 0.25s;
+    }
+    .sidebar-logo {
+      padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    .sidebar-logo img { height: 40px; filter: brightness(0) invert(1); }
+    .sidebar-logo p { font-size: 11px; color: #a0c4ff; margin-top: 4px; }
+    .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+    .nav-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; padding: 14px 18px 6px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 18px; font-size: 14px; font-weight: 500;
+      color: rgba(255,255,255,0.8); cursor: pointer; border-left: 3px solid transparent;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+    .nav-item.aktif { background: rgba(255,255,255,0.12); color: var(--white); border-left-color: #f5a623; }
+    .nav-item .nav-ikon { font-size: 18px; width: 22px; text-align: center; }
+    .sidebar-footer { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 12px; color: rgba(255,255,255,0.5); }
+    .sidebar-footer strong { display: block; color: rgba(255,255,255,0.85); font-size: 13px; }
+
+    /* Main area */
+    .admin-main { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar h2 { font-size: 18px; font-weight: 700; color: var(--biru); }
+    .topbar-right { display: flex; gap: 10px; align-items: center; }
+    .btn-logout { background: transparent; border: 1.5px solid var(--merah); color: var(--merah); padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-logout:hover { background: var(--merah-bg); }
+
+    /* Content */
+    .content { flex: 1; padding: 28px; }
+    .panel { display: none; }
+    .panel.aktif { display: block; }
+
+    /* Stat cards */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-kad {
+      background: var(--white); border-radius: 12px; padding: 20px;
+      border: 1.5px solid var(--border); text-align: center;
+    }
+    .stat-ikon { font-size: 30px; margin-bottom: 8px; }
+    .stat-num { font-size: 32px; font-weight: 800; color: var(--biru); line-height: 1; }
+    .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1.5px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead tr { background: var(--biru); color: var(--white); }
+    th { padding: 12px 14px; font-weight: 600; text-align: left; white-space: nowrap; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-biru { background: var(--biru-pale); color: var(--biru); }
+    .btn-aksi { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; margin-right: 4px; }
+    .btn-edit { background: #fef9ec; color: #854d0e; border: 1px solid #fde68a; }
+    .btn-edit:hover { background: #fde68a; }
+    .btn-hapus { background: var(--merah-bg); color: var(--merah); border: 1px solid #fca5a5; }
+    .btn-hapus:hover { background: #fca5a5; }
+    .btn-daftar { background: var(--hijau-bg); color: var(--hijau); border: 1px solid #86efac; }
+    .btn-daftar:hover { background: #86efac; }
+
+    /* Panel header */
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .panel-header h3 { font-size: 17px; font-weight: 700; color: var(--text); }
+    .panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Modal */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-kotak { background: var(--white); border-radius: 14px; padding: 28px 32px; max-width: 520px; width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal-kotak h3 { font-size: 17px; font-weight: 700; color: var(--biru); margin-bottom: 20px; }
+    .modal-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .span2 { grid-column: span 2; }
+    .fg { display: flex; flex-direction: column; gap: 5px; }
+    .fg label { font-size: 13px; font-weight: 600; }
+    .fg input, .fg select { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 14px; font-family: inherit; outline: none; }
+    .fg input:focus, .fg select:focus { border-color: var(--biru); box-shadow: 0 0 0 3px rgba(26,58,107,0.1); }
+
+    /* Login */
+    #panel-login { max-width: 420px; margin: 60px auto; }
+    .login-header { text-align: center; margin-bottom: 28px; }
+    .login-header img { height: 56px; margin-bottom: 12px; }
+    .login-header h2 { font-size: 22px; font-weight: 800; color: var(--biru); }
+    .login-header p { font-size: 14px; color: var(--text-muted); }
+
+    /* Import zone */
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px; padding: 28px;
+      text-align: center; color: var(--text-muted); font-size: 14px; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.drag { border-color: var(--biru); background: var(--biru-pale); }
+    .drop-zone .drop-ikon { font-size: 32px; margin-bottom: 8px; }
+
+    /* Carian */
+    .carian-wrap { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .carian-wrap input { flex: 1; min-width: 200px; padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+    .carian-wrap input:focus { border-color: var(--biru); }
+
+    @media (max-width: 700px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.buka { transform: translateX(0); }
+      .admin-main { margin-left: 0; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .span2 { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN ═══════════════════════════════════════════════════════════════ -->
+<div id="skrin-login">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#eef2f9;">
+    <div class="card" style="max-width:400px;width:92%;padding:36px 32px;">
+      <div class="login-header">
+        <img src="logo-kks2.png" alt="Logo KKS2"/>
+        <h2>Panel Admin</h2>
+        <p>Sistem e-Sijil KKS2</p>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="admin" autocomplete="off"/>
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label>Kata Laluan</label>
+        <input type="password" id="login-pass" placeholder="••••••••"/>
+      </div>
+      <button id="btn-login" class="btn btn-primary" style="width:100%;">
+        <span id="login-label">Log Masuk</span>
+        <span id="login-spin" class="spinner hidden"></span>
+      </button>
+      <div id="login-ralat" class="alert alert-ralat hidden" style="margin-top:14px;"></div>
+      <div style="text-align:center;margin-top:18px;">
+        <a href="index.html" style="font-size:13px;color:var(--text-muted);">← Kembali ke halaman utama</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN LAYOUT ════════════════════════════════════════════════════════ -->
+<div id="skrin-admin" class="hidden">
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="logo-kks2.png" alt="KKS2"/>
+        <p>Panel Pentadbiran</p>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <a class="nav-item aktif" data-panel="dashboard">
+          <span class="nav-ikon">📊</span> Dashboard
+        </a>
+        <a class="nav-item" data-panel="peserta">
+          <span class="nav-ikon">👥</span> Urus Peserta
+        </a>
+        <a class="nav-item" data-panel="kursus">
+          <span class="nav-ikon">📚</span> Urus Kursus
+        </a>
+        <a class="nav-item" data-panel="pendaftaran">
+          <span class="nav-ikon">📋</span> Pendaftaran
+        </a>
+        <a class="nav-item" data-panel="import">
+          <span class="nav-ikon">📥</span> Import Excel/CSV
+        </a>
+        <div class="nav-label">Sistem</div>
+        <a class="nav-item" href="index.html">
+          <span class="nav-ikon">🌐</span> Halaman Utama
+        </a>
+        <a class="nav-item" href="faq.html">
+          <span class="nav-ikon">❓</span> Panduan & FAQ
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <strong id="sidebar-nama">Admin</strong>
+        Kolej Komuniti Segamat 2
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="admin-main">
+      <div class="topbar">
+        <h2 id="topbar-tajuk">Dashboard</h2>
+        <div class="topbar-right">
+          <span style="font-size:13px;color:var(--text-muted);" id="topbar-masa"></span>
+          <button class="btn-logout" id="btn-logout">Log Keluar</button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ── Dashboard ── -->
+        <div class="panel aktif" id="panel-dashboard">
+          <div class="stat-grid">
+            <div class="stat-kad">
+              <div class="stat-ikon">👥</div>
+              <div class="stat-num" id="stat-peserta">—</div>
+              <div class="stat-label">Jumlah Peserta</div>
+            </div>
+            <div class="stat-kad">
+              <div class="stat-ikon">📚</div>
+              <div class="stat-num" id="stat-kursus">—</div>
+              <div class="stat-label">Jumlah Kursus</div>
+            </div>
+            <div class="stat-kad">
+              <div class="stat-ikon">📋</div>
+              <div class="stat-num" id="stat-daftar">—</div>
+              <div class="stat-label">Pendaftaran</div>
+            </div>
+            <div class="stat-kad">
+              <div class="stat-ikon">🔑</div>
+              <div class="stat-num" id="stat-otp">—</div>
+              <div class="stat-label">OTP Hari Ini</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="font-size:15px;font-weight:700;color:var(--biru);margin-bottom:12px;">📌 Pautan Pantas</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="tukarpanel('peserta')">➕ Tambah Peserta</button>
+              <button class="btn btn-primary" onclick="tukarpanel('kursus')">➕ Tambah Kursus</button>
+              <button class="btn btn-ghost"   onclick="tukarpanel('import')">📥 Import Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Urus Peserta ── -->
+        <div class="panel" id="panel-peserta">
+          <div class="panel-header">
+            <h3>Senarai Peserta</h3>
+            <div class="panel-actions">
+              <button class="btn btn-primary" id="btn-tambah-peserta">➕ Tambah Peserta</button>
+            </div>
+          </div>
+          <div class="carian-wrap">
+            <input type="text" id="carian-peserta" placeholder="🔍  Cari nama, IC atau emel…"/>
+          </div>
+          <div class="table-wrap">
+            <table id="jadual-peserta">
+              <thead><tr><th>#</th><th>Nama</th><th>No. IC</th><th>Emel</th><th>Kursus</th><th>Tindakan</th></tr></thead>
+              <tbody id="badan-peserta"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Memuatkan…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Urus Kursus ── -->
+        <div class="panel" id="panel-kursus">
+          <div class="panel-header">
+            <h3>Senarai Kursus / Program</h3>
+            <div class="panel-actions">
+              <button class="btn btn-primary" id="btn-tambah-kursus">➕ Tambah Kursus</button>
+            </div>
+          </div>
+          <div class="carian-wrap">
+            <input type="text" id="carian-kursus" placeholder="🔍  Cari nama atau kod kursus…"/>
+          </div>
+          <div class="table-wrap">
+            <table id="jadual-kursus">
+              <thead><tr><th>#</th><th>Kod</th><th>Nama Kursus</th><th>Tarikh</th><th>Tempat</th><th>Peserta</th><th>Tindakan</th></tr></thead>
+              <tbody id="badan-kursus"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px;">Memuatkan…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Pendaftaran ── -->
+        <div class="panel" id="panel-pendaftaran">
+          <div class="panel-header">
+            <h3>Urus Pendaftaran Kursus</h3>
+          </div>
+          <div class="card" style="margin-bottom:20px;">
+            <div class="fg">
+              <label>Pilih Kursus</label>
+              <select id="pilih-kursus-daftar" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+                <option value="">— Pilih kursus —</option>
+              </select>
+            </div>
+          </div>
+          <div id="seksyen-daftar" class="hidden">
+            <div class="panel-header">
+              <h3 id="tajuk-daftar">Peserta Berdaftar</h3>
+              <button class="btn btn-primary" id="btn-daftar-peserta">➕ Daftarkan Peserta</button>
+            </div>
+            <div class="table-wrap">
+              <table><thead><tr><th>#</th><th>Nama</th><th>IC</th><th>Emel</th><th>Tindakan</th></tr></thead>
+              <tbody id="badan-daftar"><tr><td colspan="5" style="text-align:center;padding:20px;">Tiada peserta.</td></tr></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Import ── -->
+        <div class="panel" id="panel-import">
+          <div class="panel-header"><h3>Import Peserta dari Excel / CSV</h3></div>
+          <div class="card" style="margin-bottom:20px;">
+            <h4 style="font-weight:700;color:var(--biru);margin-bottom:10px;">📋 Format Fail yang Diperlukan</h4>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Pastikan fail Excel/CSV anda mempunyai lajur-lajur berikut (baris pertama = tajuk):</p>
+            <div class="table-wrap" style="margin-bottom:14px;">
+              <table style="font-size:13px;">
+                <thead><tr><th>IC</th><th>Nama</th><th>Emel</th><th>Telefon (pilihan)</th></tr></thead>
+                <tbody>
+                  <tr><td>900101015555</td><td>Ahmad bin Ali</td><td>ahmad@email.com</td><td>0123456789</td></tr>
+                  <tr><td>880215086677</td><td>Siti binti Abu</td><td>siti@email.com</td><td></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-ghost" id="btn-muat-contoh">⬇ Muat Turun Contoh Excel</button>
+          </div>
+          <div class="card">
+            <h4 style="font-weight:700;color:var(--biru);margin-bottom:14px;">📤 Muat Naik Fail</h4>
+            <div class="drop-zone" id="drop-zone">
+              <div class="drop-ikon">📂</div>
+              <p><strong>Klik untuk pilih fail</strong> atau seret dan lepas di sini</p>
+              <p style="font-size:12px;margin-top:4px;">Disokong: .xlsx, .xls, .csv (maks 5MB)</p>
+              <input type="file" id="input-fail" accept=".xlsx,.xls,.csv" style="display:none"/>
+            </div>
+            <div id="nama-fail" style="font-size:13px;color:var(--text-muted);margin-top:10px;"></div>
+            <div style="margin-top:16px;">
+              <button class="btn btn-primary" id="btn-import" disabled>📥 Mula Import</button>
+            </div>
+            <div id="hasil-import" class="hidden" style="margin-top:16px;"></div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /admin-main -->
+  </div>
+</div>
+
+<!-- ══ MODAL PESERTA ═══════════════════════════════════════════════════════ -->
+<div id="modal-peserta" class="modal-bg hidden">
+  <div class="modal-kotak">
+    <h3 id="modal-peserta-tajuk">Tambah Peserta Baru</h3>
+    <div class="form-grid">
+      <div class="fg span2">
+        <label>Nama Penuh <span class="req">*</span></label>
+        <input type="text" id="fp-nama" placeholder="Ahmad bin Ali"/>
+      </div>
+      <div class="fg">
+        <label>No. Kad Pengenalan <span class="req">*</span></label>
+        <input type="text" id="fp-ic" placeholder="900101015555" maxlength="12"/>
+      </div>
+      <div class="fg">
+        <label>Telefon</label>
+        <input type="text" id="fp-tel" placeholder="0123456789"/>
+      </div>
+      <div class="fg span2">
+        <label>Alamat Emel <span class="req">*</span></label>
+        <input type="email" id="fp-emel" placeholder="nama@email.com"/>
+      </div>
+    </div>
+    <div id="modal-peserta-ralat" class="alert alert-ralat hidden" style="margin-top:12px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modal-peserta')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-peserta">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL KURSUS ════════════════════════════════════════════════════════ -->
+<div id="modal-kursus" class="modal-bg hidden">
+  <div class="modal-kotak">
+    <h3 id="modal-kursus-tajuk">Tambah Kursus Baru</h3>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Kod Kursus <span class="req">*</span></label>
+        <input type="text" id="fk-kod" placeholder="KKS2-2025-001"/>
+      </div>
+      <div class="fg">
+        <label>Jam Kredit</label>
+        <input type="text" id="fk-kredit" placeholder="14 Jam CPD"/>
+      </div>
+      <div class="fg span2">
+        <label>Nama Kursus / Program <span class="req">*</span></label>
+        <input type="text" id="fk-nama" placeholder="Nama penuh kursus"/>
+      </div>
+      <div class="fg">
+        <label>Tarikh Mula <span class="req">*</span></label>
+        <input type="date" id="fk-mula"/>
+      </div>
+      <div class="fg">
+        <label>Tarikh Tamat <span class="req">*</span></label>
+        <input type="date" id="fk-tamat"/>
+      </div>
+      <div class="fg">
+        <label>Tempat</label>
+        <input type="text" id="fk-tempat" placeholder="Segamat"/>
+      </div>
+      <div class="fg">
+        <label>Penganjur</label>
+        <input type="text" id="fk-penganjur" value="Kolej Komuniti Segamat 2"/>
+      </div>
+    </div>
+    <div id="modal-kursus-ralat" class="alert alert-ralat hidden" style="margin-top:12px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modal-kursus')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan-kursus">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL DAFTAR PESERTA KE KURSUS ═════════════════════════════════════ -->
+<div id="modal-daftar" class="modal-bg hidden">
+  <div class="modal-kotak">
+    <h3>Daftarkan Peserta ke Kursus</h3>
+    <div class="fg" style="margin-bottom:14px;">
+      <label>Cari Peserta</label>
+      <input type="text" id="carian-daftar" placeholder="Taip nama atau emel…"/>
+    </div>
+    <div class="table-wrap" style="max-height:300px;overflow-y:auto;">
+      <table><thead><tr><th>Nama</th><th>Emel</th><th></th></tr></thead>
+      <tbody id="badan-cari-daftar"></tbody></table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modal-daftar')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE & HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+let token = localStorage.getItem('admin_token') || '';
+let editPesertaId = null, editKursusId = null, kursusIdAktif = null;
+let senaraiPeserta = [], senaraiKursus = [];
+
+function api(url, opt = {}) {
+  return fetch(url, {
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, ...opt.headers },
+    ...opt
+  });
+}
+
+function tutupModal(id) { document.getElementById(id).classList.add('hidden'); }
+function bukaModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+
+function ralat(elId, msg) {
+  const el = document.getElementById(elId);
+  if (!msg) { el.classList.add('hidden'); return; }
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function tukarpanel(nama) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('aktif'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('aktif'));
+  document.getElementById('panel-' + nama).classList.add('aktif');
+  document.querySelector(`[data-panel="${nama}"]`).classList.add('aktif');
+  document.getElementById('topbar-tajuk').textContent = {
+    dashboard: 'Dashboard', peserta: 'Urus Peserta', kursus: 'Urus Kursus',
+    pendaftaran: 'Pendaftaran', import: 'Import Excel / CSV'
+  }[nama] || nama;
+  if (nama === 'peserta')     muatPeserta();
+  if (nama === 'kursus')      muatKursus();
+  if (nama === 'pendaftaran') muatSenaraiKursusDropdown();
+  if (nama === 'dashboard')   muatDashboard();
+}
+
+// Masa topbar
+setInterval(() => {
+  const now = new Date();
+  document.getElementById('topbar-masa').textContent =
+    now.toLocaleDateString('ms-MY') + '  ' + now.toLocaleTimeString('ms-MY', {hour:'2-digit',minute:'2-digit'});
+}, 1000);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════════════════════════
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!user || !pass) return ralat('login-ralat', 'Sila isi semua medan.');
+
+  document.getElementById('login-label').textContent = 'Mengesahkan…';
+  document.getElementById('login-spin').classList.remove('hidden');
+  document.getElementById('btn-login').disabled = true;
+  ralat('login-ralat', '');
+
+  try {
+    const res  = await fetch('/api/admin/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+    const data = await res.json();
+    if (data.berjaya) {
+      token = data.token;
+      localStorage.setItem('admin_token', token);
+      document.getElementById('sidebar-nama').textContent = data.nama;
+      masukAdmin();
+    } else {
+      ralat('login-ralat', data.mesej);
+    }
+  } catch { ralat('login-ralat', 'Ralat rangkaian.'); }
+  finally {
+    document.getElementById('login-label').textContent = 'Log Masuk';
+    document.getElementById('login-spin').classList.add('hidden');
+    document.getElementById('btn-login').disabled = false;
+  }
+});
+
+function masukAdmin() {
+  document.getElementById('skrin-login').classList.add('hidden');
+  document.getElementById('skrin-admin').classList.remove('hidden');
+  muatDashboard();
+}
+
+// Auto-login jika token ada
+if (token) {
+  api('/api/admin/dashboard').then(r => {
+    if (r.ok) masukAdmin(); else { localStorage.removeItem('admin_token'); token = ''; }
+  }).catch(() => {});
+}
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  localStorage.removeItem('admin_token'); token = '';
+  document.getElementById('skrin-admin').classList.add('hidden');
+  document.getElementById('skrin-login').classList.remove('hidden');
+});
+
+// Nav
+document.querySelectorAll('.nav-item[data-panel]').forEach(n => {
+  n.addEventListener('click', () => tukarpanel(n.dataset.panel));
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════
+async function muatDashboard() {
+  try {
+    const res  = await api('/api/admin/dashboard');
+    const data = await res.json();
+    document.getElementById('stat-peserta').textContent = data.jumlah_peserta;
+    document.getElementById('stat-kursus').textContent  = data.jumlah_kursus;
+    document.getElementById('stat-daftar').textContent  = data.jumlah_daftar;
+    document.getElementById('stat-otp').textContent     = data.jumlah_otp;
+  } catch {}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PESERTA
+// ═══════════════════════════════════════════════════════════════════════════
+async function muatPeserta() {
+  const res  = await api('/api/admin/peserta');
+  senaraiPeserta = await res.json();
+  renderPeserta(senaraiPeserta);
+}
+
+function renderPeserta(data) {
+  const tb = document.getElementById('badan-peserta');
+  if (!data.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">Tiada peserta.</td></tr>'; return; }
+  tb.innerHTML = data.map((p, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${esc(p.nama)}</strong></td>
+      <td>${formatIC(p.ic)}</td>
+      <td>${esc(p.emel)}</td>
+      <td><span class="badge badge-biru">${p.jumlah_kursus} kursus</span></td>
+      <td>
+        <button class="btn-aksi btn-edit" onclick="editPeserta(${p.id})">✏️ Edit</button>
+        <button class="btn-aksi btn-hapus" onclick="hapusPeserta(${p.id},'${esc(p.nama)}')">🗑️ Padam</button>
+      </td>
+    </tr>`).join('');
+}
+
+document.getElementById('carian-peserta').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  renderPeserta(senaraiPeserta.filter(p =>
+    p.nama.toLowerCase().includes(q) || p.ic.includes(q) || p.emel.toLowerCase().includes(q)
+  ));
+});
+
+document.getElementById('btn-tambah-peserta').addEventListener('click', () => {
+  editPesertaId = null;
+  document.getElementById('modal-peserta-tajuk').textContent = 'Tambah Peserta Baru';
+  ['fp-nama','fp-ic','fp-tel','fp-emel'].forEach(id => document.getElementById(id).value = '');
+  ralat('modal-peserta-ralat', '');
+  bukaModal('modal-peserta');
+});
+
+function editPeserta(id) {
+  const p = senaraiPeserta.find(x => x.id === id);
+  if (!p) return;
+  editPesertaId = id;
+  document.getElementById('modal-peserta-tajuk').textContent = 'Kemaskini Peserta';
+  document.getElementById('fp-nama').value  = p.nama;
+  document.getElementById('fp-ic').value    = p.ic;
+  document.getElementById('fp-tel').value   = p.telefon || '';
+  document.getElementById('fp-emel').value  = p.emel;
+  ralat('modal-peserta-ralat', '');
+  bukaModal('modal-peserta');
+}
+
+async function hapusPeserta(id, nama) {
+  if (!confirm(`Padam peserta "${nama}"? Tindakan ini tidak boleh dibatalkan.`)) return;
+  const res = await api(`/api/admin/peserta/${id}`, { method: 'DELETE' });
+  const d   = await res.json();
+  alert(d.mesej);
+  muatPeserta();
+}
+
+document.getElementById('btn-simpan-peserta').addEventListener('click', async () => {
+  const nama  = document.getElementById('fp-nama').value.trim();
+  const ic    = document.getElementById('fp-ic').value.trim().replace(/-/g,'');
+  const tel   = document.getElementById('fp-tel').value.trim();
+  const emel  = document.getElementById('fp-emel').value.trim();
+  if (!nama || !ic || !emel) return ralat('modal-peserta-ralat', 'Nama, IC dan emel diperlukan.');
+
+  const url = editPesertaId ? `/api/admin/peserta/${editPesertaId}` : '/api/admin/peserta';
+  const res = await api(url, { method: editPesertaId ? 'PUT' : 'POST', body: JSON.stringify({ ic, nama, emel, telefon: tel }) });
+  const d   = await res.json();
+  if (d.berjaya) { tutupModal('modal-peserta'); muatPeserta(); muatDashboard(); }
+  else ralat('modal-peserta-ralat', d.mesej);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KURSUS
+// ═══════════════════════════════════════════════════════════════════════════
+async function muatKursus() {
+  const res = await api('/api/admin/kursus');
+  senaraiKursus = await res.json();
+  renderKursus(senaraiKursus);
+}
+
+function renderKursus(data) {
+  const tb = document.getElementById('badan-kursus');
+  if (!data.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">Tiada kursus.</td></tr>'; return; }
+  tb.innerHTML = data.map((k, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><span class="badge badge-biru">${esc(k.kod)}</span></td>
+      <td><strong>${esc(k.nama_kursus)}</strong></td>
+      <td style="white-space:nowrap">${fmt(k.tarikh_mula)} – ${fmt(k.tarikh_tamat)}</td>
+      <td>${esc(k.tempat)}</td>
+      <td>${k.jumlah_peserta} orang</td>
+      <td>
+        <button class="btn-aksi btn-edit" onclick="editKursus(${k.id})">✏️ Edit</button>
+        <button class="btn-aksi btn-hapus" onclick="hapusKursus(${k.id},'${esc(k.nama_kursus)}')">🗑️ Padam</button>
+      </td>
+    </tr>`).join('');
+}
+
+document.getElementById('carian-kursus').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  renderKursus(senaraiKursus.filter(k => k.nama_kursus.toLowerCase().includes(q) || k.kod.toLowerCase().includes(q)));
+});
+
+document.getElementById('btn-tambah-kursus').addEventListener('click', () => {
+  editKursusId = null;
+  document.getElementById('modal-kursus-tajuk').textContent = 'Tambah Kursus Baru';
+  ['fk-kod','fk-nama','fk-mula','fk-tamat','fk-tempat','fk-kredit'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fk-penganjur').value = 'Kolej Komuniti Segamat 2';
+  ralat('modal-kursus-ralat', '');
+  bukaModal('modal-kursus');
+});
+
+function editKursus(id) {
+  const k = senaraiKursus.find(x => x.id === id);
+  if (!k) return;
+  editKursusId = id;
+  document.getElementById('modal-kursus-tajuk').textContent = 'Kemaskini Kursus';
+  document.getElementById('fk-kod').value       = k.kod;
+  document.getElementById('fk-nama').value      = k.nama_kursus;
+  document.getElementById('fk-mula').value      = k.tarikh_mula?.split('T')[0] || k.tarikh_mula;
+  document.getElementById('fk-tamat').value     = k.tarikh_tamat?.split('T')[0] || k.tarikh_tamat;
+  document.getElementById('fk-tempat').value    = k.tempat;
+  document.getElementById('fk-penganjur').value = k.penganjur;
+  document.getElementById('fk-kredit').value    = k.jam_kredit;
+  ralat('modal-kursus-ralat', '');
+  bukaModal('modal-kursus');
+}
+
+async function hapusKursus(id, nama) {
+  if (!confirm(`Padam kursus "${nama}"?`)) return;
+  const res = await api(`/api/admin/kursus/${id}`, { method: 'DELETE' });
+  const d   = await res.json();
+  alert(d.mesej);
+  muatKursus();
+}
+
+document.getElementById('btn-simpan-kursus').addEventListener('click', async () => {
+  const body = {
+    kod: document.getElementById('fk-kod').value.trim(),
+    nama_kursus:  document.getElementById('fk-nama').value.trim(),
+    tarikh_mula:  document.getElementById('fk-mula').value,
+    tarikh_tamat: document.getElementById('fk-tamat').value,
+    tempat:    document.getElementById('fk-tempat').value.trim(),
+    penganjur: document.getElementById('fk-penganjur').value.trim(),
+    jam_kredit:document.getElementById('fk-kredit').value.trim()
+  };
+  if (!body.kod || !body.nama_kursus || !body.tarikh_mula || !body.tarikh_tamat)
+    return ralat('modal-kursus-ralat', 'Sila isi semua medan wajib.');
+
+  const url = editKursusId ? `/api/admin/kursus/${editKursusId}` : '/api/admin/kursus';
+  const res = await api(url, { method: editKursusId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+  const d   = await res.json();
+  if (d.berjaya) { tutupModal('modal-kursus'); muatKursus(); muatDashboard(); }
+  else ralat('modal-kursus-ralat', d.mesej);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PENDAFTARAN
+// ═══════════════════════════════════════════════════════════════════════════
+async function muatSenaraiKursusDropdown() {
+  const res = await api('/api/admin/kursus');
+  const data = await res.json();
+  const sel = document.getElementById('pilih-kursus-daftar');
+  sel.innerHTML = '<option value="">— Pilih kursus —</option>' +
+    data.map(k => `<option value="${k.id}">${k.nama_kursus} (${fmt(k.tarikh_mula)})</option>`).join('');
+}
+
+document.getElementById('pilih-kursus-daftar').addEventListener('change', async function() {
+  kursusIdAktif = this.value;
+  if (!kursusIdAktif) { document.getElementById('seksyen-daftar').classList.add('hidden'); return; }
+  document.getElementById('seksyen-daftar').classList.remove('hidden');
+  const opt = this.options[this.selectedIndex];
+  document.getElementById('tajuk-daftar').textContent = 'Peserta: ' + opt.text;
+  muatPesertaDaftar();
+});
+
+async function muatPesertaDaftar() {
+  const res  = await api(`/api/admin/pendaftaran/${kursusIdAktif}`);
+  const data = await res.json();
+  const tb   = document.getElementById('badan-daftar');
+  if (!data.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:16px;">Tiada peserta berdaftar.</td></tr>'; return; }
+  tb.innerHTML = data.map((p, i) => `
+    <tr>
+      <td>${i+1}</td><td>${esc(p.nama)}</td><td>${formatIC(p.ic)}</td><td>${esc(p.emel)}</td>
+      <td><button class="btn-aksi btn-hapus" onclick="buangDaftar(${p.id})">✕ Buang</button></td>
+    </tr>`).join('');
+}
+
+async function buangDaftar(pesertaId) {
+  if (!confirm('Buang pendaftaran peserta ini?')) return;
+  await api('/api/admin/pendaftaran', { method: 'DELETE', body: JSON.stringify({ peserta_id: pesertaId, kursus_id: kursusIdAktif }) });
+  muatPesertaDaftar();
+}
+
+document.getElementById('btn-daftar-peserta').addEventListener('click', async () => {
+  // Muat senarai peserta untuk pilih
+  const res = await api('/api/admin/peserta');
+  const data = await res.json();
+  document.getElementById('carian-daftar').value = '';
+  renderCariDaftar(data);
+  bukaModal('modal-daftar');
+});
+
+document.getElementById('carian-daftar').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  renderCariDaftar(senaraiPeserta.filter(p =>
+    p.nama.toLowerCase().includes(q) || p.emel.toLowerCase().includes(q)
+  ));
+});
+
+function renderCariDaftar(data) {
+  document.getElementById('badan-cari-daftar').innerHTML = data.slice(0,50).map(p => `
+    <tr>
+      <td>${esc(p.nama)}</td><td>${esc(p.emel)}</td>
+      <td><button class="btn-aksi btn-daftar" onclick="daftarPeserta(${p.id})">+ Daftar</button></td>
+    </tr>`).join('');
+}
+
+async function daftarPeserta(pesertaId) {
+  const res = await api('/api/admin/pendaftaran', { method: 'POST', body: JSON.stringify({ peserta_id: pesertaId, kursus_id: kursusIdAktif }) });
+  const d   = await res.json();
+  if (d.berjaya) { tutupModal('modal-daftar'); muatPesertaDaftar(); muatDashboard(); }
+  else alert(d.mesej);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// IMPORT EXCEL/CSV
+// ═══════════════════════════════════════════════════════════════════════════
+const dropZone  = document.getElementById('drop-zone');
+const inputFail = document.getElementById('input-fail');
+let failDipilih = null;
+
+dropZone.addEventListener('click', () => inputFail.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  pilihFail(e.dataTransfer.files[0]);
+});
+inputFail.addEventListener('change', () => pilihFail(inputFail.files[0]));
+
+function pilihFail(fail) {
+  failDipilih = fail;
+  document.getElementById('nama-fail').textContent = fail ? `✅ Fail dipilih: ${fail.name} (${(fail.size/1024).toFixed(1)} KB)` : '';
+  document.getElementById('btn-import').disabled = !fail;
+  document.getElementById('hasil-import').classList.add('hidden');
+}
+
+document.getElementById('btn-import').addEventListener('click', async () => {
+  if (!failDipilih) return;
+  const fd = new FormData();
+  fd.append('fail', failDipilih);
+  document.getElementById('btn-import').disabled = true;
+  document.getElementById('btn-import').textContent = '⏳ Sedang import…';
+
+  try {
+    const res  = await fetch('/api/admin/peserta/import', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd
+    });
+    const data = await res.json();
+    const el   = document.getElementById('hasil-import');
+    el.classList.remove('hidden');
+    if (data.berjaya) {
+      el.className = 'alert alert-berjaya';
+      el.innerHTML = `✅ <strong>${data.berjaya_import} peserta berjaya diimport.</strong>` +
+        (data.gagal ? ` ${data.gagal} rekod gagal.` : '') +
+        (data.ralat?.length ? `<br/><small>${data.ralat.join('<br/>')}</small>` : '');
+      muatDashboard();
+    } else {
+      el.className = 'alert alert-ralat';
+      el.textContent = data.mesej;
+    }
+  } catch { alert('Ralat rangkaian.'); }
+  finally {
+    document.getElementById('btn-import').disabled = false;
+    document.getElementById('btn-import').textContent = '📥 Mula Import';
+  }
+});
+
+// Muat turun contoh Excel
+document.getElementById('btn-muat-contoh').addEventListener('click', () => {
+  const csv = 'IC,Nama,Emel,Telefon\n900101015555,Ahmad bin Ali,ahmad@email.com,0123456789\n880215086677,Siti binti Abu,siti@email.com,';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'contoh_import_peserta.csv';
+  a.click();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatIC(ic) {
+  if (!ic) return '';
+  return ic.length === 12 ? `${ic.slice(0,6)}-${ic.slice(6,8)}-${ic.slice(8)}` : ic;
+}
+function fmt(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('ms-MY', { day:'2-digit', month:'short', year:'numeric' });
+}
+</script>
+</body>
+</html>

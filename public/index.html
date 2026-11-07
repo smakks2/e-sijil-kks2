@@ -45,31 +45,17 @@
       </p>
 
       <form id="form-minta-otp" novalidate>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="ic">No. Kad Pengenalan <span class="req">*</span></label>
-            <input
-              type="text"
-              id="ic"
-              name="ic"
-              placeholder="Contoh: 900101015555"
-              maxlength="14"
-              autocomplete="off"
-              required
-            />
-            <span class="field-hint">Tanpa tanda sempang (-)</span>
-          </div>
-          <div class="form-group">
-            <label for="emel">Alamat Emel <span class="req">*</span></label>
-            <input
-              type="email"
-              id="emel"
-              name="emel"
-              placeholder="Contoh: nama@email.com"
-              autocomplete="off"
-              required
-            />
-          </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label for="emel">Alamat Emel <span class="req">*</span></label>
+          <input
+            type="email"
+            id="emel"
+            name="emel"
+            placeholder="Contoh: nama@email.com"
+            autocomplete="off"
+            required
+          />
+          <span class="field-hint">Masukkan emel yang didaftarkan semasa program/kursus</span>
         </div>
 
         <div id="blok-otp" class="otp-block hidden">

@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ── Data in-memory (gantikan dengan DB sebenar untuk produksi) ───────────────
 const pesertaData = require('./data/peserta.json');
 
-// Storan sementara untuk OTP: { "ic|emel": { kod, expiry } }
+// Storan sementara untuk OTP: { "emel": { kod, expiry } }
 const otpStore = {};
 
 // ── Konfigurasi emel (gantikan dengan SMTP sebenar) ──────────────────────────
@@ -29,10 +29,8 @@ const transporter = nodemailer.createTransport({
 });
 
 // ── Fungsi pembantu ──────────────────────────────────────────────────────────
-function cariPeserta(ic, emel) {
-  return pesertaData.find(
-    p => p.ic === ic.replace(/-/g, '') && p.emel.toLowerCase() === emel.toLowerCase()
-  );
+function cariPesertaByEmel(emel) {
+  return pesertaData.find(p => p.emel.toLowerCase() === emel.toLowerCase());
 }
 
 function janaKodOTP() {
@@ -48,25 +46,25 @@ function maskEmel(emel) {
 
 // ── ROUTE 1: Minta OTP ───────────────────────────────────────────────────────
 // POST /api/minta-otp
-// Body: { ic, emel }
+// Body: { emel }
 app.post('/api/minta-otp', async (req, res) => {
-  const { ic, emel } = req.body;
+  const { emel } = req.body;
 
-  if (!ic || !emel) {
-    return res.status(400).json({ berjaya: false, mesej: 'No. K/P dan emel diperlukan.' });
+  if (!emel) {
+    return res.status(400).json({ berjaya: false, mesej: 'Alamat emel diperlukan.' });
   }
 
-  const peserta = cariPeserta(ic, emel);
+  const peserta = cariPesertaByEmel(emel);
   if (!peserta) {
     return res.status(404).json({
       berjaya: false,
-      mesej: 'Rekod tidak dijumpai. Sila semak semula No. K/P dan emel anda.'
+      mesej: 'Emel tidak dijumpai dalam rekod. Sila hubungi penganjur program.'
     });
   }
 
   const kod = janaKodOTP();
   const expiry = Date.now() + 10 * 60 * 1000; // sah 10 minit
-  const kunci = `${ic}|${emel.toLowerCase()}`;
+  const kunci = emel.toLowerCase();
   otpStore[kunci] = { kod, expiry };
 
   // Hantar emel OTP
@@ -116,15 +114,15 @@ app.post('/api/minta-otp', async (req, res) => {
 
 // ── ROUTE 2: Cari e-Sijil (sahkan OTP + pulangkan senarai kursus) ────────────
 // POST /api/cari-sijil
-// Body: { ic, emel, kod }
+// Body: { emel, kod }
 app.post('/api/cari-sijil', (req, res) => {
-  const { ic, emel, kod } = req.body;
+  const { emel, kod } = req.body;
 
-  if (!ic || !emel || !kod) {
-    return res.status(400).json({ berjaya: false, mesej: 'Semua medan diperlukan.' });
+  if (!emel || !kod) {
+    return res.status(400).json({ berjaya: false, mesej: 'Emel dan kod pengesahan diperlukan.' });
   }
 
-  const kunci = `${ic}|${emel.toLowerCase()}`;
+  const kunci = emel.toLowerCase();
   const rekodOTP = otpStore[kunci];
 
   if (!rekodOTP) {
@@ -141,7 +139,7 @@ app.post('/api/cari-sijil', (req, res) => {
   // OTP sah — padamkan dari store
   delete otpStore[kunci];
 
-  const peserta = cariPeserta(ic, emel);
+  const peserta = cariPesertaByEmel(emel);
   if (!peserta) {
     return res.status(404).json({ berjaya: false, mesej: 'Rekod peserta tidak dijumpai.' });
   }
@@ -162,17 +160,17 @@ app.post('/api/cari-sijil', (req, res) => {
 });
 
 // ── ROUTE 3: Muat turun sijil PDF ────────────────────────────────────────────
-// GET /api/muat-turun/:kursusId?ic=...&nama=...
+// GET /api/muat-turun/:kursusId?emel=...
 app.get('/api/muat-turun/:kursusId', (req, res) => {
   const { kursusId } = req.params;
-  const { ic } = req.query;
+  const { emel } = req.query;
 
-  if (!ic) {
-    return res.status(400).json({ mesej: 'Parameter ic diperlukan.' });
+  if (!emel) {
+    return res.status(400).json({ mesej: 'Parameter emel diperlukan.' });
   }
 
-  // Cari peserta berdasarkan ic sahaja (OTP sudah disahkan di langkah sebelum)
-  const peserta = pesertaData.find(p => p.ic === ic.replace(/-/g, ''));
+  // Cari peserta berdasarkan emel (OTP sudah disahkan di langkah sebelum)
+  const peserta = cariPesertaByEmel(emel);
   if (!peserta) {
     return res.status(404).json({ mesej: 'Peserta tidak dijumpai.' });
   }

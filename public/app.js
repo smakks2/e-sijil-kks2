@@ -5,7 +5,6 @@
 // ── State ────────────────────────────────────────────────────────────────────
 const state = {
   fasa: 'minta-otp',   // 'minta-otp' | 'sahkan-otp' | 'hasil'
-  ic: '',
   emel: '',
   nama: '',
   kursus: []
@@ -13,7 +12,6 @@ const state = {
 
 // ── DOM References ────────────────────────────────────────────────────────────
 const formMintaOTP      = document.getElementById('form-minta-otp');
-const inputIC           = document.getElementById('ic');
 const inputEmel         = document.getElementById('emel');
 const inputKodOTP       = document.getElementById('kod-otp');
 const blokOTP           = document.getElementById('blok-otp');
@@ -52,22 +50,15 @@ formMintaOTP.addEventListener('submit', async (e) => {
 
 // ── Tindakan: Minta OTP ───────────────────────────────────────────────────────
 async function tindakanMintaOTP() {
-  const ic   = inputIC.value.trim().replace(/-/g, '');
   const emel = inputEmel.value.trim();
 
   // Validasi asas
-  if (!ic || ic.length < 12) {
-    tunjukMesej('Sila masukkan No. Kad Pengenalan yang sah (sekurang-kurangnya 12 digit).', 'ralat');
-    inputIC.classList.add('invalid');
-    return;
-  }
   if (!emel || !emel.includes('@')) {
     tunjukMesej('Sila masukkan alamat emel yang sah.', 'ralat');
     inputEmel.classList.add('invalid');
     return;
   }
 
-  inputIC.classList.remove('invalid');
   inputEmel.classList.remove('invalid');
   tetapkanMuatTurun(true, 'Menghantar kod…');
 
@@ -75,18 +66,16 @@ async function tindakanMintaOTP() {
     const res  = await fetch('/api/minta-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ic, emel })
+      body: JSON.stringify({ emel })
     });
     const data = await res.json();
 
     if (data.berjaya) {
-      state.ic   = ic;
       state.emel = emel;
       state.fasa = 'sahkan-otp';
 
       // Tunjuk blok OTP
       blokOTP.classList.remove('hidden');
-      inputIC.disabled   = true;
       inputEmel.disabled = true;
       btnLabelSubmit.textContent = 'Cari e-Sijil';
 
@@ -124,7 +113,7 @@ async function tindakanSahkanOTP() {
     const res  = await fetch('/api/cari-sijil', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ic: state.ic, emel: state.emel, kod })
+      body: JSON.stringify({ emel: state.emel, kod })
     });
     const data = await res.json();
 
@@ -147,7 +136,7 @@ async function tindakanSahkanOTP() {
 function paparkanHasil() {
   // Isi maklumat peserta
   paparNama.textContent = state.nama;
-  paparIC.textContent   = `No. K/P: ${formatIC(state.ic)}`;
+  paparIC.textContent   = state.emel;
   pesertaAvatar.textContent = state.nama.charAt(0).toUpperCase();
 
   // Jana kad kursus
@@ -200,7 +189,7 @@ async function muatTurunSijil(kursusId, namaKursus) {
   modalTutup.classList.add('hidden');
 
   try {
-    const url = `/api/muat-turun/${encodeURIComponent(kursusId)}?ic=${encodeURIComponent(state.ic)}`;
+    const url = `/api/muat-turun/${encodeURIComponent(kursusId)}?emel=${encodeURIComponent(state.emel)}`;
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -212,7 +201,7 @@ async function muatTurunSijil(kursusId, namaKursus) {
     const objURL = URL.createObjectURL(blob);
     const a      = document.createElement('a');
     a.href     = objURL;
-    a.download = `eSijil_${kursusId}_${state.ic}.pdf`;
+    a.download = `eSijil_${kursusId}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -237,29 +226,25 @@ btnCariLagi.addEventListener('click', () => {
 
 function resetForm() {
   state.fasa  = 'minta-otp';
-  state.ic    = '';
   state.emel  = '';
   state.nama  = '';
   state.kursus = [];
 
   formMintaOTP.reset();
-  inputIC.disabled   = false;
   inputEmel.disabled = false;
   blokOTP.classList.add('hidden');
   mesejMaklumbalas.classList.add('hidden');
   mesejMaklumbalas.className = 'alert hidden';
   btnLabelSubmit.textContent = 'Dapatkan Kod Pengesahan';
-  inputIC.classList.remove('invalid');
   inputEmel.classList.remove('invalid');
   inputKodOTP.classList.remove('invalid');
 }
 
 // ── Hantar Semula OTP ─────────────────────────────────────────────────────────
 btnHantarSemula.addEventListener('click', async () => {
-  if (!state.ic || !state.emel) return;
+  if (!state.emel) return;
 
   state.fasa = 'minta-otp';
-  inputIC.disabled   = false;
   inputEmel.disabled = false;
 
   await tindakanMintaOTP();

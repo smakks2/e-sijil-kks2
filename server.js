@@ -1,26 +1,50 @@
-const express = require('express');
+require('dotenv').config();
+
+const express    = require('express');
 const nodemailer = require('nodemailer');
-const path = require('path');
+const path       = require('path');
+const mysql      = require('mysql2/promise');
 const { janaSijilPDF } = require('./templates/sijil');
 
-const app = express();
-const PORT = 3000;
+const app  = express();
+const PORT = process.env.PORT || 3000;
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── Data in-memory (gantikan dengan DB sebenar untuk produksi) ───────────────
-const pesertaData = require('./data/peserta.json');
+// ── Sambungan Database MySQL ─────────────────────────────────────────────────
+const db = mysql.createPool({
+  host:            process.env.DB_HOST     || 'localhost',
+  port:     parseInt(process.env.DB_PORT)  || 3306,
+  database:        process.env.DB_NAME     || 'esijil_kks2',
+  user:            process.env.DB_USER     || 'root',
+  password:        process.env.DB_PASS     || '',
+  waitForConnections: true,
+  connectionLimit:    10,
+  charset:            'utf8mb4'
+});
 
-// Storan sementara untuk OTP: { "emel": { kod, expiry } }
+// Uji sambungan semasa boot
+(async () => {
+  try {
+    const conn = await db.getConnection();
+    console.log('✅ Berjaya sambung ke database MySQL');
+    conn.release();
+  } catch (err) {
+    console.warn('⚠️  Gagal sambung MySQL — sistem akan guna mod fail JSON sebagai sandaran.');
+    console.warn('   Ralat:', err.message);
+  }
+})();
+
+// ── Storan OTP sementara (in-memory) ────────────────────────────────────────
+// Kunci: emel, Nilai: { kod, expiry }
 const otpStore = {};
 
-// ── Konfigurasi emel (gantikan dengan SMTP sebenar) ──────────────────────────
-// Untuk ujian, gunakan Ethereal (https://ethereal.email/) atau SMTP sebenar
+// ── Konfigurasi SMTP ─────────────────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-  port: parseInt(process.env.SMTP_PORT) || 587,
+  host:   process.env.SMTP_HOST || 'smtp.ethereal.email',
+  port:   parseInt(process.env.SMTP_PORT) || 587,
   secure: false,
   auth: {
     user: process.env.SMTP_USER || 'your-ethereal-user@ethereal.email',
@@ -29,8 +53,53 @@ const transporter = nodemailer.createTransport({
 });
 
 // ── Fungsi pembantu ──────────────────────────────────────────────────────────
-function cariPesertaByEmel(emel) {
-  return pesertaData.find(p => p.emel.toLowerCase() === emel.toLowerCase());
+
+// Cari peserta berdasarkan emel (dari MySQL)
+async function cariPesertaByEmel(emel) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT p.id, p.ic, p.nama, p.emel,
+              k.kod AS kursus_id, k.nama_kursus, k.tarikh_mula, k.tarikh_tamat,
+              k.tempat, k.penganjur, k.jam_kredit
+       FROM peserta p
+       LEFT JOIN pendaftaran pd ON pd.peserta_id = p.id
+       LEFT JOIN kursus k       ON k.id = pd.kursus_id AND k.aktif = 1
+       WHERE p.emel = ? AND p.aktif = 1
+       ORDER BY k.tarikh_mula DESC`,
+      [emel.toLowerCase()]
+    );
+
+    if (!rows.length) return null;
+
+    // Susun semula: satu peserta dengan array kursus
+    const peserta = {
+      id:    rows[0].id,
+      ic:    rows[0].ic,
+      nama:  rows[0].nama,
+      emel:  rows[0].emel,
+      kursus: rows
+        .filter(r => r.kursus_id)
+        .map(r => ({
+          id:           r.kursus_id,
+          nama_kursus:  r.nama_kursus,
+          tarikh_mula:  r.tarikh_mula instanceof Date
+                          ? r.tarikh_mula.toISOString().split('T')[0]
+                          : r.tarikh_mula,
+          tarikh_tamat: r.tarikh_tamat instanceof Date
+                          ? r.tarikh_tamat.toISOString().split('T')[0]
+                          : r.tarikh_tamat,
+          tempat:       r.tempat,
+          penganjur:    r.penganjur,
+          jam_kredit:   r.jam_kredit
+        }))
+    };
+    return peserta;
+  } catch (err) {
+    console.error('[DB] Ralat cariPesertaByEmel:', err.message);
+    // Sandaran kepada JSON jika DB tidak tersambung
+    const pesertaData = require('./data/peserta.json');
+    return pesertaData.find(p => p.emel.toLowerCase() === emel.toLowerCase()) || null;
+  }
 }
 
 function janaKodOTP() {
@@ -38,8 +107,8 @@ function janaKodOTP() {
 }
 
 function maskEmel(emel) {
-  const parts = emel.split('@');
-  const user  = parts[0];
+  const parts  = emel.split('@');
+  const user   = parts[0];
   const domain = parts[1] || '';
   return `${user.charAt(0)}***@${domain}`;
 }
@@ -54,7 +123,7 @@ app.post('/api/minta-otp', async (req, res) => {
     return res.status(400).json({ berjaya: false, mesej: 'Alamat emel diperlukan.' });
   }
 
-  const peserta = cariPesertaByEmel(emel);
+  const peserta = await cariPesertaByEmel(emel);
   if (!peserta) {
     return res.status(404).json({
       berjaya: false,
@@ -62,16 +131,25 @@ app.post('/api/minta-otp', async (req, res) => {
     });
   }
 
-  const kod = janaKodOTP();
+  const kod    = janaKodOTP();
   const expiry = Date.now() + 10 * 60 * 1000; // sah 10 minit
-  const kunci = emel.toLowerCase();
+  const kunci  = emel.toLowerCase();
   otpStore[kunci] = { kod, expiry };
+
+  // Simpan ke otp_log (jika DB tersambung)
+  try {
+    const expiryDate = new Date(expiry);
+    await db.execute(
+      'INSERT INTO otp_log (emel, kod, expiry) VALUES (?, ?, ?)',
+      [kunci, kod, expiryDate]
+    );
+  } catch (_) { /* Abaikan jika DB tidak tersambung */ }
 
   // Hantar emel OTP
   try {
     await transporter.sendMail({
-      from: '"Sistem e-Sijil KKS2" <contact_us@kksegamat2.edu.my>',
-      to: peserta.emel,
+      from:    '"Sistem e-Sijil KKS2" <contact_us@kksegamat2.edu.my>',
+      to:      peserta.emel,
       subject: 'Kod Pengesahan e-Sijil KKS2',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
@@ -96,33 +174,30 @@ app.post('/api/minta-otp', async (req, res) => {
     });
 
     console.log(`[OTP] Kod ${kod} dihantar ke ${peserta.emel}`);
+    res.json({ berjaya: true, mesej: `Kod pengesahan telah dihantar ke emel ${maskEmel(peserta.emel)}.` });
 
-    res.json({
-      berjaya: true,
-      mesej: `Kod pengesahan telah dihantar ke emel ${maskEmel(peserta.emel)}.`
-    });
   } catch (err) {
     console.error('[OTP] Gagal hantar emel:', err.message);
-    // Dalam mod pembangunan, kembalikan kod terus (BUANG dalam produksi!)
+    // Mod pembangunan — papar kod terus
     res.json({
-      berjaya: true,
-      mesej: `[MOD PEMBANGUNAN] Kod OTP anda: ${kod}`,
+      berjaya:  true,
+      mesej:    `[MOD PEMBANGUNAN] Kod OTP anda: ${kod}`,
       _kod_dev: kod
     });
   }
 });
 
-// ── ROUTE 2: Cari e-Sijil (sahkan OTP + pulangkan senarai kursus) ────────────
+// ── ROUTE 2: Sahkan OTP + Cari Sijil ─────────────────────────────────────────
 // POST /api/cari-sijil
 // Body: { emel, kod }
-app.post('/api/cari-sijil', (req, res) => {
+app.post('/api/cari-sijil', async (req, res) => {
   const { emel, kod } = req.body;
 
   if (!emel || !kod) {
     return res.status(400).json({ berjaya: false, mesej: 'Emel dan kod pengesahan diperlukan.' });
   }
 
-  const kunci = emel.toLowerCase();
+  const kunci    = emel.toLowerCase();
   const rekodOTP = otpStore[kunci];
 
   if (!rekodOTP) {
@@ -139,38 +214,45 @@ app.post('/api/cari-sijil', (req, res) => {
   // OTP sah — padamkan dari store
   delete otpStore[kunci];
 
-  const peserta = cariPesertaByEmel(emel);
+  // Tandakan OTP sebagai digunakan dalam DB
+  try {
+    await db.execute(
+      'UPDATE otp_log SET digunakan = 1 WHERE emel = ? AND kod = ? AND digunakan = 0 ORDER BY created_at DESC LIMIT 1',
+      [kunci, kod.trim()]
+    );
+  } catch (_) { /* Abaikan jika DB tidak tersambung */ }
+
+  const peserta = await cariPesertaByEmel(emel);
   if (!peserta) {
     return res.status(404).json({ berjaya: false, mesej: 'Rekod peserta tidak dijumpai.' });
   }
 
   res.json({
     berjaya: true,
-    nama: peserta.nama,
-    ic: peserta.ic,
-    kursus: peserta.kursus.map(k => ({
-      id: k.id,
-      nama_kursus: k.nama_kursus,
-      tarikh_mula: k.tarikh_mula,
+    nama:    peserta.nama,
+    ic:      peserta.ic,
+    kursus:  peserta.kursus.map(k => ({
+      id:           k.id,
+      nama_kursus:  k.nama_kursus,
+      tarikh_mula:  k.tarikh_mula,
       tarikh_tamat: k.tarikh_tamat,
-      tempat: k.tempat,
-      jam_kredit: k.jam_kredit
+      tempat:       k.tempat,
+      jam_kredit:   k.jam_kredit
     }))
   });
 });
 
-// ── ROUTE 3: Muat turun sijil PDF ────────────────────────────────────────────
+// ── ROUTE 3: Muat Turun Sijil PDF ────────────────────────────────────────────
 // GET /api/muat-turun/:kursusId?emel=...
-app.get('/api/muat-turun/:kursusId', (req, res) => {
+app.get('/api/muat-turun/:kursusId', async (req, res) => {
   const { kursusId } = req.params;
-  const { emel } = req.query;
+  const { emel }     = req.query;
 
   if (!emel) {
     return res.status(400).json({ mesej: 'Parameter emel diperlukan.' });
   }
 
-  // Cari peserta berdasarkan emel (OTP sudah disahkan di langkah sebelum)
-  const peserta = cariPesertaByEmel(emel);
+  const peserta = await cariPesertaByEmel(emel);
   if (!peserta) {
     return res.status(404).json({ mesej: 'Peserta tidak dijumpai.' });
   }
@@ -188,7 +270,7 @@ app.get('/api/muat-turun/:kursusId', (req, res) => {
   }
 });
 
-// ── Mulakan pelayan ──────────────────────────────────────────────────────────
+// ── Mulakan Pelayan ───────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n✅ Pelayan e-Sijil KKS2 berjalan di http://localhost:${PORT}`);
   console.log(`   Tekan Ctrl+C untuk berhenti.\n`);

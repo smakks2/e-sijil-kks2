@@ -171,7 +171,7 @@ function janaSijilPDF(peserta, kursus, res) {
     .fontSize(9)
     .font('Helvetica')
     .text(
-      'Sijil ini dijana secara elektronik oleh Sistem e-Sijil KKS2 • Kolej Komuniti Segamat 2 • kks2.edu.my',
+      'Sijil ini dijana secara elektronik oleh Sistem e-Sijil KKS2 • Kolej Komuniti Segamat 2 • kksegamat2.mypolycc.edu.my',
       0, H - 52,
       { align: 'center', width: W }
     );

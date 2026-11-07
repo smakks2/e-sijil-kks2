@@ -207,16 +207,17 @@ router.get('/kursus', sahkanToken, async (req, res) => {
 
 // POST /api/admin/kursus — Tambah kursus
 router.post('/kursus', sahkanToken, async (req, res) => {
-  const { kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit } = req.body;
+  const { kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit, jenis, tempoh } = req.body;
   if (!kod || !nama_kursus || !tarikh_mula || !tarikh_tamat)
     return res.status(400).json({ mesej: 'Kod, nama, tarikh mula dan tarikh tamat diperlukan.' });
 
   const db = req.app.get('db');
   try {
     const [result] = await db.execute(
-      'INSERT INTO kursus (kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit) VALUES (?,?,?,?,?,?,?)',
+      'INSERT INTO kursus (kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit, jenis, tempoh) VALUES (?,?,?,?,?,?,?,?,?)',
       [kod.trim(), nama_kursus.trim(), tarikh_mula, tarikh_tamat,
-       tempat || '', penganjur || 'Kolej Komuniti Segamat 2', jam_kredit || '']
+       tempat || '', penganjur || 'Kolej Komuniti Segamat 2', jam_kredit || '',
+       jenis || 'bersemuka', tempoh || null]
     );
     res.json({ berjaya: true, id: result.insertId, mesej: 'Kursus berjaya ditambah.' });
   } catch (err) {
@@ -228,12 +229,13 @@ router.post('/kursus', sahkanToken, async (req, res) => {
 
 // PUT /api/admin/kursus/:id — Kemaskini kursus
 router.put('/kursus/:id', sahkanToken, async (req, res) => {
-  const { kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit } = req.body;
+  const { kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit, jenis, tempoh } = req.body;
   const db = req.app.get('db');
   try {
     await db.execute(
-      'UPDATE kursus SET kod=?, nama_kursus=?, tarikh_mula=?, tarikh_tamat=?, tempat=?, penganjur=?, jam_kredit=? WHERE id=?',
-      [kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit, req.params.id]
+      'UPDATE kursus SET kod=?, nama_kursus=?, tarikh_mula=?, tarikh_tamat=?, tempat=?, penganjur=?, jam_kredit=?, jenis=?, tempoh=? WHERE id=?',
+      [kod, nama_kursus, tarikh_mula, tarikh_tamat, tempat, penganjur, jam_kredit,
+       jenis || 'bersemuka', tempoh || null, req.params.id]
     );
     res.json({ berjaya: true, mesej: 'Kursus berjaya dikemaskini.' });
   } catch (err) { res.status(500).json({ mesej: err.message }); }

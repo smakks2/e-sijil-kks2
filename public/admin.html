@@ -189,6 +189,9 @@
         <a class="nav-item" data-panel="import">
           <span class="nav-ikon">📥</span> Import Excel/CSV
         </a>
+        <a class="nav-item" data-panel="template">
+          <span class="nav-ikon">🎨</span> Urus Template Sijil
+        </a>
         <div class="nav-label">Sistem</div>
         <a class="nav-item" href="index.html">
           <span class="nav-ikon">🌐</span> Halaman Utama
@@ -345,6 +348,142 @@
           </div>
         </div>
 
+        <!-- ── Urus Template Sijil ── -->
+        <div class="panel" id="panel-template">
+          <div class="panel-header"><h3>Urus Template Sijil</h3></div>
+
+          <!-- Tab jenis -->
+          <div style="display:flex;gap:8px;margin-bottom:20px;">
+            <button class="tab-tmpl btn btn-primary" data-jenis="online"    id="tab-tmpl-online">🌐 Kursus Online</button>
+            <button class="tab-tmpl btn btn-ghost"   data-jenis="bersemuka" id="tab-tmpl-bersemuka">🏫 Kursus Bersemuka</button>
+          </div>
+
+          <!-- Panel Online -->
+          <div id="tmpl-online" class="tmpl-panel">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+              <!-- Latar -->
+              <div class="card">
+                <h4 style="font-weight:700;color:var(--biru);margin-bottom:12px;">🖼️ Imej Latar Sijil</h4>
+                <div id="prev-latar-online" style="margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);min-height:80px;display:flex;align-items:center;justify-content:center;background:var(--surface);">
+                  <span style="color:var(--text-muted);font-size:13px;">Tiada imej latar</span>
+                </div>
+                <div class="drop-zone" id="dz-latar-online" style="padding:16px;">
+                  <div class="drop-ikon" style="font-size:22px;">📂</div>
+                  <p style="font-size:13px;"><strong>Klik atau seret</strong> imej PNG/JPG</p>
+                  <p style="font-size:11px;margin-top:2px;">Saiz cadangan: 1122 × 794px (A4 landscape)</p>
+                  <input type="file" id="inp-latar-online" accept=".png,.jpg,.jpeg" style="display:none"/>
+                </div>
+                <div style="margin-top:10px;display:flex;gap:8px;">
+                  <button class="btn btn-primary" id="btn-upload-latar-online" disabled style="flex:1;">⬆ Upload Latar</button>
+                </div>
+                <div id="status-latar-online" style="font-size:12px;margin-top:8px;"></div>
+              </div>
+
+              <!-- Tandatangan -->
+              <div class="card">
+                <h4 style="font-weight:700;color:var(--biru);margin-bottom:12px;">✍️ Imej Tandatangan</h4>
+                <div id="prev-tanda-online" style="margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);min-height:80px;display:flex;align-items:center;justify-content:center;background:var(--surface);">
+                  <span style="color:var(--text-muted);font-size:13px;">Tiada imej tandatangan</span>
+                </div>
+                <div class="drop-zone" id="dz-tanda-online" style="padding:16px;">
+                  <div class="drop-ikon" style="font-size:22px;">✍️</div>
+                  <p style="font-size:13px;"><strong>Klik atau seret</strong> imej tandatangan PNG</p>
+                  <p style="font-size:11px;margin-top:2px;">Cadangan: latar lutsinar (PNG)</p>
+                  <input type="file" id="inp-tanda-online" accept=".png,.jpg,.jpeg" style="display:none"/>
+                </div>
+                <div style="margin-top:10px;display:flex;gap:8px;">
+                  <button class="btn btn-primary" id="btn-upload-tanda-online" disabled style="flex:1;">⬆ Upload Tandatangan</button>
+                </div>
+                <div id="status-tanda-online" style="font-size:12px;margin-top:8px;"></div>
+              </div>
+            </div>
+
+            <!-- Maklumat teks -->
+            <div class="card">
+              <h4 style="font-weight:700;color:var(--biru);margin-bottom:14px;">📝 Maklumat Pengarah</h4>
+              <div class="form-grid">
+                <div class="fg">
+                  <label>Nama Pengarah</label>
+                  <input type="text" id="tmpl-online-pengarah" value="NOR DALILA BINTI ABD RAHMAN"/>
+                </div>
+                <div class="fg">
+                  <label>Jawatan</label>
+                  <input type="text" id="tmpl-online-jawatan" value="PENGARAH"/>
+                </div>
+                <div class="fg span2">
+                  <label>Nama Organisasi</label>
+                  <input type="text" id="tmpl-online-org" value="KOLEJ KOMUNITI SEGAMAT 2"/>
+                </div>
+              </div>
+              <div style="margin-top:14px;">
+                <button class="btn btn-primary" id="btn-simpan-tmpl-online">💾 Simpan Maklumat</button>
+                <span id="status-info-online" style="font-size:13px;margin-left:12px;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel Bersemuka (struktur sama) -->
+          <div id="tmpl-bersemuka" class="tmpl-panel hidden">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="card">
+                <h4 style="font-weight:700;color:var(--biru);margin-bottom:12px;">🖼️ Imej Latar Sijil</h4>
+                <div id="prev-latar-bersemuka" style="margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);min-height:80px;display:flex;align-items:center;justify-content:center;background:var(--surface);">
+                  <span style="color:var(--text-muted);font-size:13px;">Tiada imej latar</span>
+                </div>
+                <div class="drop-zone" id="dz-latar-bersemuka" style="padding:16px;">
+                  <div class="drop-ikon" style="font-size:22px;">📂</div>
+                  <p style="font-size:13px;"><strong>Klik atau seret</strong> imej PNG/JPG</p>
+                  <p style="font-size:11px;margin-top:2px;">Saiz cadangan: 1122 × 794px (A4 landscape)</p>
+                  <input type="file" id="inp-latar-bersemuka" accept=".png,.jpg,.jpeg" style="display:none"/>
+                </div>
+                <div style="margin-top:10px;">
+                  <button class="btn btn-primary" id="btn-upload-latar-bersemuka" disabled style="width:100%;">⬆ Upload Latar</button>
+                </div>
+                <div id="status-latar-bersemuka" style="font-size:12px;margin-top:8px;"></div>
+              </div>
+              <div class="card">
+                <h4 style="font-weight:700;color:var(--biru);margin-bottom:12px;">✍️ Imej Tandatangan</h4>
+                <div id="prev-tanda-bersemuka" style="margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);min-height:80px;display:flex;align-items:center;justify-content:center;background:var(--surface);">
+                  <span style="color:var(--text-muted);font-size:13px;">Tiada imej tandatangan</span>
+                </div>
+                <div class="drop-zone" id="dz-tanda-bersemuka" style="padding:16px;">
+                  <div class="drop-ikon" style="font-size:22px;">✍️</div>
+                  <p style="font-size:13px;"><strong>Klik atau seret</strong> imej tandatangan PNG</p>
+                  <p style="font-size:11px;margin-top:2px;">Cadangan: latar lutsinar (PNG)</p>
+                  <input type="file" id="inp-tanda-bersemuka" accept=".png,.jpg,.jpeg" style="display:none"/>
+                </div>
+                <div style="margin-top:10px;">
+                  <button class="btn btn-primary" id="btn-upload-tanda-bersemuka" disabled style="width:100%;">⬆ Upload Tandatangan</button>
+                </div>
+                <div id="status-tanda-bersemuka" style="font-size:12px;margin-top:8px;"></div>
+              </div>
+            </div>
+            <div class="card">
+              <h4 style="font-weight:700;color:var(--biru);margin-bottom:14px;">📝 Maklumat Pengarah</h4>
+              <div class="form-grid">
+                <div class="fg">
+                  <label>Nama Pengarah</label>
+                  <input type="text" id="tmpl-bersemuka-pengarah" value="NOR DALILA BINTI ABD RAHMAN"/>
+                </div>
+                <div class="fg">
+                  <label>Jawatan</label>
+                  <input type="text" id="tmpl-bersemuka-jawatan" value="PENGARAH"/>
+                </div>
+                <div class="fg span2">
+                  <label>Nama Organisasi</label>
+                  <input type="text" id="tmpl-bersemuka-org" value="KOLEJ KOMUNITI SEGAMAT 2"/>
+                </div>
+              </div>
+              <div style="margin-top:14px;">
+                <button class="btn btn-primary" id="btn-simpan-tmpl-bersemuka">💾 Simpan Maklumat</button>
+                <span id="status-info-bersemuka" style="font-size:13px;margin-left:12px;"></span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /panel-template -->
+
       </div><!-- /content -->
     </div><!-- /admin-main -->
   </div>
@@ -413,6 +552,17 @@
         <label>Penganjur</label>
         <input type="text" id="fk-penganjur" value="Kolej Komuniti Segamat 2"/>
       </div>
+      <div class="fg">
+        <label>Jenis Kursus <span class="req">*</span></label>
+        <select id="fk-jenis">
+          <option value="bersemuka">🏫 Bersemuka</option>
+          <option value="online">🌐 Dalam Talian (Online)</option>
+        </select>
+      </div>
+      <div class="fg" id="fg-tempoh">
+        <label>Tempoh Kursus</label>
+        <input type="text" id="fk-tempoh" placeholder="cth: 3 Jam / 2 Hari"/>
+      </div>
     </div>
     <div id="modal-kursus-ralat" class="alert alert-ralat hidden" style="margin-top:12px;"></div>
     <div class="modal-footer">
@@ -472,12 +622,14 @@ function tukarpanel(nama) {
   document.querySelector(`[data-panel="${nama}"]`).classList.add('aktif');
   document.getElementById('topbar-tajuk').textContent = {
     dashboard: 'Dashboard', peserta: 'Urus Peserta', kursus: 'Urus Kursus',
-    pendaftaran: 'Pendaftaran', import: 'Import Excel / CSV'
+    pendaftaran: 'Pendaftaran', import: 'Import Excel / CSV',
+    template: 'Urus Template Sijil'
   }[nama] || nama;
   if (nama === 'peserta')     muatPeserta();
   if (nama === 'kursus')      muatKursus();
   if (nama === 'pendaftaran') muatSenaraiKursusDropdown();
   if (nama === 'dashboard')   muatDashboard();
+  if (nama === 'template')    muatTemplate('online');
 }
 
 // Masa topbar
@@ -673,8 +825,9 @@ document.getElementById('carian-kursus').addEventListener('input', function() {
 document.getElementById('btn-tambah-kursus').addEventListener('click', () => {
   editKursusId = null;
   document.getElementById('modal-kursus-tajuk').textContent = 'Tambah Kursus Baru';
-  ['fk-kod','fk-nama','fk-mula','fk-tamat','fk-tempat','fk-kredit'].forEach(id => document.getElementById(id).value = '');
+  ['fk-kod','fk-nama','fk-mula','fk-tamat','fk-tempat','fk-kredit','fk-tempoh'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fk-penganjur').value = 'Kolej Komuniti Segamat 2';
+  document.getElementById('fk-jenis').value = 'bersemuka';
   ralat('modal-kursus-ralat', '');
   bukaModal('modal-kursus');
 });
@@ -691,6 +844,8 @@ function editKursus(id) {
   document.getElementById('fk-tempat').value    = k.tempat;
   document.getElementById('fk-penganjur').value = k.penganjur;
   document.getElementById('fk-kredit').value    = k.jam_kredit;
+  document.getElementById('fk-jenis').value     = k.jenis || 'bersemuka';
+  document.getElementById('fk-tempoh').value    = k.tempoh || '';
   ralat('modal-kursus-ralat', '');
   bukaModal('modal-kursus');
 }
@@ -710,8 +865,10 @@ document.getElementById('btn-simpan-kursus').addEventListener('click', async () 
     tarikh_mula:  document.getElementById('fk-mula').value,
     tarikh_tamat: document.getElementById('fk-tamat').value,
     tempat:    document.getElementById('fk-tempat').value.trim(),
-    penganjur: document.getElementById('fk-penganjur').value.trim(),
-    jam_kredit:document.getElementById('fk-kredit').value.trim()
+    penganjur:  document.getElementById('fk-penganjur').value.trim(),
+    jam_kredit: document.getElementById('fk-kredit').value.trim(),
+    jenis:      document.getElementById('fk-jenis').value,
+    tempoh:     document.getElementById('fk-tempoh').value.trim() || null
   };
   if (!body.kod || !body.nama_kursus || !body.tarikh_mula || !body.tarikh_tamat)
     return ralat('modal-kursus-ralat', 'Sila isi semua medan wajib.');
@@ -871,6 +1028,140 @@ function fmt(d) {
   const dt = new Date(d);
   return dt.toLocaleDateString('ms-MY', { day:'2-digit', month:'short', year:'numeric' });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// URUS TEMPLATE SIJIL
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Tab switching dalam panel template
+document.querySelectorAll('.tab-tmpl').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const jenis = btn.dataset.jenis;
+    document.querySelectorAll('.tab-tmpl').forEach(b => {
+      b.className = 'tab-tmpl btn btn-ghost';
+    });
+    btn.className = 'tab-tmpl btn btn-primary';
+    document.querySelectorAll('.tmpl-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('tmpl-' + jenis).classList.remove('hidden');
+    muatTemplate(jenis);
+  });
+});
+
+async function muatTemplate(jenis) {
+  try {
+    const res  = await api(`/api/template/${jenis}`);
+    const data = await res.json();
+
+    // Isi maklumat pengarah
+    const el = (id) => document.getElementById(id);
+    el(`tmpl-${jenis}-pengarah`).value = data.nama_pengarah    || 'NOR DALILA BINTI ABD RAHMAN';
+    el(`tmpl-${jenis}-jawatan`).value  = data.jawatan_pengarah || 'PENGARAH';
+    el(`tmpl-${jenis}-org`).value      = data.nama_organisasi  || 'KOLEJ KOMUNITI SEGAMAT 2';
+
+    // Preview latar
+    const prevLatar = el(`prev-latar-${jenis}`);
+    if (data.latar_fail) {
+      prevLatar.innerHTML = `<img src="/uploads/latar/${data.latar_fail}" style="width:100%;height:auto;display:block;" onerror="this.parentElement.innerHTML='<span style=color:var(--text-muted);font-size:13px;padding:10px>Gagal muatkan imej</span>'"/>`;
+    } else {
+      prevLatar.innerHTML = '<span style="color:var(--text-muted);font-size:13px;padding:10px;">Tiada imej latar</span>';
+    }
+
+    // Preview tandatangan
+    const prevTanda = el(`prev-tanda-${jenis}`);
+    if (data.tandatangan_fail) {
+      prevTanda.innerHTML = `<img src="/uploads/tandatangan/${data.tandatangan_fail}" style="max-height:80px;max-width:100%;display:block;margin:auto;" onerror="this.parentElement.innerHTML='<span style=color:var(--text-muted);font-size:13px;padding:10px>Gagal muatkan imej</span>'"/>`;
+    } else {
+      prevTanda.innerHTML = '<span style="color:var(--text-muted);font-size:13px;padding:10px;">Tiada imej tandatangan</span>';
+    }
+  } catch (err) {
+    console.error('Gagal muat template:', err);
+  }
+}
+
+// Fungsi setup drop zone untuk upload imej
+function setupDropZone(dzId, inputId, btnId, statusId, jenis, jenisFail) {
+  const dz    = document.getElementById(dzId);
+  const input = document.getElementById(inputId);
+  const btn   = document.getElementById(btnId);
+  let failDipilih = null;
+
+  dz.addEventListener('click', () => input.click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); tetapkanFail(e.dataTransfer.files[0]); });
+  input.addEventListener('change', () => tetapkanFail(input.files[0]));
+
+  function tetapkanFail(fail) {
+    failDipilih = fail;
+    dz.classList.remove('drag');
+    btn.disabled = !fail;
+    const status = document.getElementById(statusId);
+    status.textContent = fail ? `✅ ${fail.name} (${(fail.size/1024).toFixed(1)} KB)` : '';
+    status.style.color = 'var(--hijau)';
+  }
+
+  btn.addEventListener('click', async () => {
+    if (!failDipilih) return;
+    btn.disabled = true;
+    btn.textContent = '⏳ Menghantar…';
+    const status = document.getElementById(statusId);
+
+    const fd = new FormData();
+    fd.append('fail', failDipilih);
+
+    try {
+      const res  = await fetch(`/api/template/${jenis}/${jenisFail}`, {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd
+      });
+      const data = await res.json();
+      if (data.berjaya) {
+        status.textContent = '✅ ' + data.mesej;
+        status.style.color = 'var(--hijau)';
+        muatTemplate(jenis); // Refresh preview
+      } else {
+        status.textContent = '❌ ' + data.mesej;
+        status.style.color = 'var(--merah)';
+      }
+    } catch {
+      status.textContent = '❌ Ralat rangkaian.';
+      status.style.color = 'var(--merah)';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = jenisFail === 'latar' ? '⬆ Upload Latar' : '⬆ Upload Tandatangan';
+      failDipilih = null;
+      input.value = '';
+    }
+  });
+}
+
+// Inisialisasi semua drop zones
+setupDropZone('dz-latar-online',      'inp-latar-online',      'btn-upload-latar-online',      'status-latar-online',      'online',    'latar');
+setupDropZone('dz-tanda-online',      'inp-tanda-online',      'btn-upload-tanda-online',      'status-tanda-online',      'online',    'tandatangan');
+setupDropZone('dz-latar-bersemuka',   'inp-latar-bersemuka',   'btn-upload-latar-bersemuka',   'status-latar-bersemuka',   'bersemuka', 'latar');
+setupDropZone('dz-tanda-bersemuka',   'inp-tanda-bersemuka',   'btn-upload-tanda-bersemuka',   'status-tanda-bersemuka',   'bersemuka', 'tandatangan');
+
+// Simpan maklumat pengarah
+async function simpanInfoTemplate(jenis) {
+  const body = {
+    nama_pengarah:    document.getElementById(`tmpl-${jenis}-pengarah`).value.trim(),
+    jawatan_pengarah: document.getElementById(`tmpl-${jenis}-jawatan`).value.trim(),
+    nama_organisasi:  document.getElementById(`tmpl-${jenis}-org`).value.trim()
+  };
+  const status = document.getElementById(`status-info-${jenis}`);
+  try {
+    const res  = await api(`/api/template/${jenis}`, { method: 'PUT', body: JSON.stringify(body) });
+    const data = await res.json();
+    status.textContent = data.berjaya ? '✅ Berjaya disimpan!' : '❌ ' + data.mesej;
+    status.style.color = data.berjaya ? 'var(--hijau)' : 'var(--merah)';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } catch {
+    status.textContent = '❌ Ralat rangkaian.';
+    status.style.color = 'var(--merah)';
+  }
+}
+
+document.getElementById('btn-simpan-tmpl-online').addEventListener('click',    () => simpanInfoTemplate('online'));
+document.getElementById('btn-simpan-tmpl-bersemuka').addEventListener('click', () => simpanInfoTemplate('bersemuka'));
 </script>
 </body>
 </html>

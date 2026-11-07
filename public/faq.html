@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panduan & FAQ | e-Sijil KKS2</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── FAQ-specific styles ── */
+    .faq-hero {
+      background: var(--biru);
+      color: var(--white);
+      text-align: center;
+      padding: 40px 24px 48px;
+      position: relative;
+    }
+    .faq-hero h2 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .faq-hero h2 span { color: #f5a623; }
+    .faq-hero p { font-size: 15px; color: #a0c4ff; }
+
+    .faq-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 9px 20px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+    .tab-btn:hover  { border-color: var(--biru); color: var(--biru); }
+    .tab-btn.aktif  { background: var(--biru); color: var(--white); border-color: var(--biru); }
+
+    .faq-section { display: none; }
+    .faq-section.aktif { display: block; }
+
+    /* Panduan langkah */
+    .langkah-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .langkah-kad {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 18px;
+      text-align: center;
+      position: relative;
+    }
+    .langkah-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--biru);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+    .langkah-ikon {
+      font-size: 28px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .langkah-tajuk {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--biru);
+      margin-bottom: 6px;
+    }
+    .langkah-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .langkah-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--border);
+      font-size: 22px;
+      padding-top: 18px;
+    }
+
+    /* FAQ accordion */
+    .faq-list { display: flex; flex-direction: column; gap: 10px; }
+    .faq-item {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.18s;
+    }
+    .faq-item.buka { border-color: var(--biru); }
+    .faq-soalan {
+      width: 100%;
+      text-align: left;
+      background: var(--white);
+      border: none;
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.15s;
+    }
+    .faq-soalan:hover { background: var(--surface); }
+    .faq-item.buka .faq-soalan { background: var(--biru-pale); color: var(--biru); }
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: transform 0.25s;
+    }
+    .faq-item.buka .faq-chevron { transform: rotate(180deg); background: var(--biru); color: var(--white); }
+    .faq-jawapan {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.2s;
+      background: var(--biru-pale);
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .faq-jawapan-inner { padding: 0 20px; }
+    .faq-item.buka .faq-jawapan { max-height: 400px; }
+    .faq-item.buka .faq-jawapan-inner { padding: 14px 20px 18px; }
+
+    /* Hubungi */
+    .hubungi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .hubungi-kad {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .hubungi-ikon {
+      font-size: 26px;
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: var(--biru-pale);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hubungi-label { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+    .hubungi-nilai { font-size: 15px; font-weight: 600; color: var(--text); }
+    .hubungi-nilai a { color: var(--biru); text-decoration: none; }
+    .hubungi-nilai a:hover { text-decoration: underline; }
+
+    /* Nav link */
+    .nav-balik {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--biru);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1.5px solid var(--biru);
+      transition: background 0.15s;
+      margin-bottom: 24px;
+    }
+    .nav-balik:hover { background: var(--biru-pale); }
+
+    .seksyen-tajuk {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--biru);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--biru-pale);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <img src="logo-kks2.png" alt="Logo Kolej Komuniti Segamat 2" class="logo-img" />
+      </div>
+      <div class="header-title">
+        <h1>e-<span>Sijil</span> KKS2</h1>
+        <p>Sistem Muat Turun Sijil Elektronik</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ HERO ════════════════════════════════════════════════════════════ -->
+  <div class="faq-hero">
+    <h2>Panduan &amp; <span>Soalan Lazim</span></h2>
+    <p>Semua yang anda perlu tahu untuk menggunakan sistem e-Sijil KKS2</p>
+  </div>
+
+  <!-- ══ MAIN ════════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <a href="index.html" class="nav-balik">← Kembali ke Halaman Utama</a>
+
+    <!-- Tab Navigasi -->
+    <div class="faq-tabs">
+      <button class="tab-btn aktif" data-tab="panduan">📋 Panduan Penggunaan</button>
+      <button class="tab-btn" data-tab="faq">❓ Soalan Lazim (FAQ)</button>
+      <button class="tab-btn" data-tab="hubungi">📞 Hubungi Kami</button>
+    </div>
+
+    <!-- ── TAB 1: Panduan ────────────────────────────────────────────── -->
+    <div class="faq-section aktif" id="tab-panduan">
+      <div class="card">
+        <h3 class="seksyen-tajuk">🚀 Cara Menggunakan Sistem e-Sijil KKS2</h3>
+
+        <div class="langkah-grid">
+          <div class="langkah-kad">
+            <div class="langkah-num">1</div>
+            <span class="langkah-ikon">🌐</span>
+            <p class="langkah-tajuk">Buka Sistem</p>
+            <p class="langkah-desc">Taip alamat sistem dalam pelayar web (Chrome, Edge atau Firefox)</p>
+          </div>
+          <div class="langkah-kad">
+            <div class="langkah-num">2</div>
+            <span class="langkah-ikon">📧</span>
+            <p class="langkah-tajuk">Masukkan Emel</p>
+            <p class="langkah-desc">Masukkan alamat emel yang didaftarkan semasa menghadiri program/kursus</p>
+          </div>
+          <div class="langkah-kad">
+            <div class="langkah-num">3</div>
+            <span class="langkah-ikon">🔑</span>
+            <p class="langkah-tajuk">Dapatkan Kod OTP</p>
+            <p class="langkah-desc">Semak emel anda — kod pengesahan 6 digit akan dihantar. Sah selama 10 minit</p>
+          </div>
+          <div class="langkah-kad">
+            <div class="langkah-num">4</div>
+            <span class="langkah-ikon">🔍</span>
+            <p class="langkah-tajuk">Cari e-Sijil</p>
+            <p class="langkah-desc">Masukkan kod OTP dan klik "Cari e-Sijil" — senarai kursus anda akan dipaparkan</p>
+          </div>
+          <div class="langkah-kad">
+            <div class="langkah-num">5</div>
+            <span class="langkah-ikon">⬇️</span>
+            <p class="langkah-tajuk">Muat Turun PDF</p>
+            <p class="langkah-desc">Klik "Muat Turun e-Sijil" pada kursus yang dikehendaki — fail PDF akan dimuat turun</p>
+          </div>
+        </div>
+
+        <div style="margin-top:28px;">
+          <h3 class="seksyen-tajuk">📌 Maklumat Sijil</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            <div style="background:var(--biru-pale);border-radius:10px;padding:16px 18px;">
+              <p style="font-weight:700;color:var(--biru);margin-bottom:4px;">📄 Format Sijil</p>
+              <p style="font-size:13px;color:var(--text-muted);">PDF (boleh dicetak atau dikongsi secara digital)</p>
+            </div>
+            <div style="background:#f0fdf4;border-radius:10px;padding:16px 18px;">
+              <p style="font-weight:700;color:#166534;margin-bottom:4px;">✅ Kesahihan</p>
+              <p style="font-size:13px;color:var(--text-muted);">Sijil dijana secara elektronik dan sah untuk kegunaan rasmi</p>
+            </div>
+            <div style="background:#fef9ec;border-radius:10px;padding:16px 18px;">
+              <p style="font-weight:700;color:#854d0e;margin-bottom:4px;">🏅 Kandungan</p>
+              <p style="font-size:13px;color:var(--text-muted);">Nama peserta, nama kursus, tarikh, tempat dan jam kredit CPD</p>
+            </div>
+            <div style="background:var(--biru-pale);border-radius:10px;padding:16px 18px;">
+              <p style="font-weight:700;color:var(--biru);margin-bottom:4px;">🔓 Akses</p>
+              <p style="font-size:13px;color:var(--text-muted);">Boleh dimuat turun bila-bila masa menggunakan emel berdaftar</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB 2: FAQ ────────────────────────────────────────────────── -->
+    <div class="faq-section" id="tab-faq">
+      <div class="card">
+        <h3 class="seksyen-tajuk">❓ Soalan Lazim (FAQ)</h3>
+        <div class="faq-list">
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Emel saya tidak dijumpai dalam sistem. Apa yang perlu dilakukan?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Ini bermakna emel yang dimasukkan tidak sepadan dengan rekod dalam sistem. Sila pastikan anda memasukkan emel yang sama seperti yang didaftarkan semasa mendaftar program/kursus. Jika masalah berterusan, sila hubungi pihak KKS2 untuk semakan rekod.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Saya tidak menerima emel kod OTP. Apa yang perlu dilakukan?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Sila semak folder <strong>Spam</strong> atau <strong>Junk</strong> dalam emel anda kerana kadangkala emel sistem tersisih ke sana. Jika masih tiada, klik butang <strong>"Hantar Semula"</strong> untuk dapatkan kod baru. Pastikan sambungan internet anda stabil semasa membuat permintaan.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Kod OTP saya sudah tamat tempoh. Boleh minta semula?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Ya, boleh. Kod OTP hanya sah selama <strong>10 minit</strong> dari masa dihantar. Klik butang <strong>"Hantar Semula"</strong> yang terpapar dalam borang untuk mendapatkan kod baru yang segar.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Saya telah menghadiri beberapa kursus. Boleh muat turun semua sijil?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Ya, boleh. Setelah log masuk, semua kursus/program yang pernah anda hadiri akan disenaraikan. Klik butang <strong>"Muat Turun e-Sijil"</strong> pada setiap kursus secara berasingan untuk dapatkan sijil masing-masing dalam format PDF.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Sijil saya gagal dimuat turun. Bagaimana?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Cuba langkah berikut:
+                <ul style="margin-top:8px;padding-left:20px;">
+                  <li>Gunakan pelayar web terkini seperti <strong>Google Chrome</strong> atau <strong>Microsoft Edge</strong></li>
+                  <li>Pastikan pelayar anda tidak menyekat muat turun automatik (semak tetapan pop-up)</li>
+                  <li>Cuba muat semula halaman dan ulangi proses dari awal</li>
+                  <li>Jika masalah berterusan, hubungi pihak KKS2</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Adakah sijil yang dimuat turun sah secara rasmi?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Ya. Sijil yang dijana oleh sistem e-Sijil KKS2 adalah sijil elektronik rasmi yang dikeluarkan oleh <strong>Kolej Komuniti Segamat 2</strong>. Ia boleh digunakan untuk tujuan rekod peribadi, permohonan kerja, kenaikan pangkat, atau apa-apa keperluan rasmi lain.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Bolehkah saya muat turun sijil orang lain?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Tidak. Sistem ini direka bentuk supaya hanya peserta yang berdaftar sahaja boleh mengakses sijil mereka sendiri. Kod OTP akan dihantar ke emel peribadi peserta dan mesti dimasukkan untuk mendapatkan akses — memastikan keselamatan dan privasi setiap peserta.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-soalan">
+              Berapa kali boleh saya muat turun sijil yang sama?
+              <span class="faq-chevron">▼</span>
+            </button>
+            <div class="faq-jawapan">
+              <div class="faq-jawapan-inner">
+                Tiada had. Anda boleh muat turun sijil yang sama sebanyak kali yang diperlukan. Setiap kali log masuk dengan emel dan OTP yang sah, anda boleh memuat turun mana-mana sijil yang tersenarai.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB 3: Hubungi ────────────────────────────────────────────── -->
+    <div class="faq-section" id="tab-hubungi">
+      <div class="card">
+        <h3 class="seksyen-tajuk">📞 Hubungi Kami</h3>
+        <p class="card-desc">Jika anda menghadapi sebarang masalah teknikal atau pertanyaan berkaitan e-Sijil, sila hubungi pihak KKS2 melalui saluran berikut:</p>
+
+        <div class="hubungi-grid">
+          <div class="hubungi-kad">
+            <div class="hubungi-ikon">📍</div>
+            <div>
+              <p class="hubungi-label">Alamat</p>
+              <p class="hubungi-nilai">Kolej Komuniti Segamat 2<br/>Jalan Genuang, 85000 Segamat, Johor</p>
+            </div>
+          </div>
+          <div class="hubungi-kad">
+            <div class="hubungi-ikon">📞</div>
+            <div>
+              <p class="hubungi-label">Telefon</p>
+              <p class="hubungi-nilai"><a href="tel:+6072312345">07-231 XXXX</a></p>
+            </div>
+          </div>
+          <div class="hubungi-kad">
+            <div class="hubungi-ikon">📧</div>
+            <div>
+              <p class="hubungi-label">Emel</p>
+              <p class="hubungi-nilai"><a href="mailto:esijil@kks2.edu.my">esijil@kks2.edu.my</a></p>
+            </div>
+          </div>
+          <div class="hubungi-kad">
+            <div class="hubungi-ikon">🕐</div>
+            <div>
+              <p class="hubungi-label">Waktu Pejabat</p>
+              <p class="hubungi-nilai">Isnin – Jumaat<br/>8:00 pagi – 5:00 petang</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;background:var(--biru-pale);border-radius:10px;padding:18px 20px;border-left:4px solid var(--biru);">
+          <p style="font-weight:700;color:var(--biru);margin-bottom:6px;">💡 Tip sebelum menghubungi</p>
+          <p style="font-size:14px;color:var(--text-muted);">Sila sediakan <strong>nama penuh</strong> dan <strong>alamat emel</strong> yang didaftarkan semasa menghadiri program/kursus untuk mempercepatkan proses semakan rekod anda.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <p>© <span id="tahun-footer"></span> Kolej Komuniti Segamat 2 (KKS2)</p>
+    <p class="footer-note">Sistem e-Sijil KKS2 • Semua hak terpelihara</p>
+  </footer>
+
+  <script>
+    // Tahun footer
+    document.getElementById('tahun-footer').textContent = new Date().getFullYear();
+
+    // ── Tab switching ──────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('aktif'));
+        document.querySelectorAll('.faq-section').forEach(s => s.classList.remove('aktif'));
+
+        btn.classList.add('aktif');
+        document.getElementById('tab-' + tab).classList.add('aktif');
+      });
+    });
+
+    // ── FAQ accordion ──────────────────────────────────────────────────
+    document.querySelectorAll('.faq-soalan').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const sudahBuka = item.classList.contains('buka');
+
+        // Tutup semua
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('buka'));
+
+        // Buka yang diklik (jika belum buka)
+        if (!sudahBuka) item.classList.add('buka');
+      });
+    });
+  </script>
+</body>
+</html>

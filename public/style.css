@@ -77,6 +77,20 @@ body {
 .header-title h1 span { color: #f5a623; }
 .header-title p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
+.header-faq-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--biru);
+  text-decoration: none;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--biru);
+  transition: background 0.15s;
+}
+.header-faq-link:hover { background: var(--biru-pale); }
+
 /* ── Main Layout ─────────────────────────────────────────────────────────── */
 .main {
   flex: 1;

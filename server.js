@@ -70,14 +70,14 @@ app.post('/api/minta-otp', async (req, res) => {
   // Hantar emel OTP
   try {
     await transporter.sendMail({
-      from: '"Sistem e-Sijil KKS2" <esijil@kklw.gov.my>',
+      from: '"Sistem e-Sijil KKS2" <esijil@kks2.edu.my>',
       to: peserta.emel,
       subject: 'Kod Pengesahan e-Sijil KKS2',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
           <div style="background:#1a3a6b;padding:20px;text-align:center;">
             <h2 style="color:#fff;margin:0;">Sistem e-Sijil KKS2</h2>
-            <p style="color:#a0c4ff;margin:4px 0 0;">Kementerian Kemajuan Luar Bandar dan Wilayah</p>
+            <p style="color:#f5a623;margin:4px 0 0;font-weight:600;">Kolej Komuniti Segamat 2</p>
           </div>
           <div style="padding:28px;">
             <p>Salam <strong>${peserta.nama}</strong>,</p>
@@ -89,7 +89,7 @@ app.post('/api/minta-otp', async (req, res) => {
             <p style="color:#666;font-size:13px;">Jika anda tidak membuat permintaan ini, abaikan emel ini.</p>
           </div>
           <div style="background:#f7f7f7;padding:14px;text-align:center;font-size:12px;color:#999;">
-            © ${new Date().getFullYear()} Kementerian Kemajuan Luar Bandar dan Wilayah • kklw.gov.my
+            © ${new Date().getFullYear()} Kolej Komuniti Segamat 2 • kks2.edu.my
           </div>
         </div>
       `

@@ -1,4 +1,6 @@
 const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Jana PDF sijil untuk peserta
@@ -33,35 +35,37 @@ function janaSijilPDF(peserta, kursus, res) {
   doc.rect(30, 30, W - 60, H - 60).lineWidth(1.5).stroke('#c8a84b');
 
   // ── Header jalur biru ────────────────────────────────────────────
-  doc.rect(30, 30, W - 60, 80).fill('#1a3a6b');
+  doc.rect(30, 30, W - 60, 90).fill('#1a3a6b');
 
-  // Logo teks kiri
-  doc
-    .fillColor('#ffffff')
-    .fontSize(11)
-    .font('Helvetica-Bold')
-    .text('KEMENTERIAN KEMAJUAN LUAR BANDAR', 55, 45, { align: 'left', width: 300 });
-  doc
-    .fontSize(10)
-    .font('Helvetica')
-    .text('DAN WILAYAH (KKLW)', 55, 60, { align: 'left', width: 300 });
+  // Logo KKS2 kiri
+  const logoPath = path.join(__dirname, '..', 'public', 'logo-kks2.png');
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 42, 38, { height: 72, fit: [200, 72] });
+  } else {
+    // Fallback teks jika logo tiada
+    doc
+      .fillColor('#ffffff')
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text('KOLEJ KOMUNITI SEGAMAT 2', 55, 50, { align: 'left', width: 260 });
+  }
 
   // Tajuk tengah
   doc
-    .fillColor('#f5d97a')
-    .fontSize(22)
+    .fillColor('#f5a623')
+    .fontSize(24)
     .font('Helvetica-Bold')
-    .text('e-SIJIL', 0, 48, { align: 'center', width: W });
+    .text('e-SIJIL', 0, 46, { align: 'center', width: W });
 
   // Nombor sijil kanan
   doc
     .fillColor('#a0c4ff')
     .fontSize(9)
     .font('Helvetica')
-    .text(`No. Sijil: ${kursus.id}`, W - 250, 55, { align: 'right', width: 200 });
+    .text(`No. Sijil: ${kursus.id}`, W - 250, 60, { align: 'right', width: 200 });
 
   // ── Badan ────────────────────────────────────────────────────────
-  let y = 130;
+  let y = 140;
 
   doc
     .fillColor('#1a3a6b')
@@ -167,7 +171,7 @@ function janaSijilPDF(peserta, kursus, res) {
     .fontSize(9)
     .font('Helvetica')
     .text(
-      'Sijil ini dijana secara elektronik oleh Sistem e-Sijil KKS2 • kklw.gov.my',
+      'Sijil ini dijana secara elektronik oleh Sistem e-Sijil KKS2 • Kolej Komuniti Segamat 2 • kks2.edu.my',
       0, H - 52,
       { align: 'center', width: W }
     );

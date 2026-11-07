@@ -1,0 +1,77 @@
+[
+  {
+    "ic": "900101015555",
+    "nama": "Ahmad Fadzillah bin Mohd Yusof",
+    "emel": "ahmad.fadzillah@email.com",
+    "kursus": [
+      {
+        "id": "KKS2-2024-001",
+        "nama_kursus": "Kursus Kepimpinan dan Pengurusan Strategik",
+        "tarikh_mula": "2024-03-10",
+        "tarikh_tamat": "2024-03-12",
+        "tempat": "Putrajaya",
+        "penganjur": "Kementerian Kemajuan Luar Bandar dan Wilayah",
+        "jam_kredit": "21 Jam CPD"
+      },
+      {
+        "id": "KKS2-2024-015",
+        "nama_kursus": "Program Transformasi Digital Sektor Awam",
+        "tarikh_mula": "2024-07-22",
+        "tarikh_tamat": "2024-07-23",
+        "tempat": "Kuala Lumpur",
+        "penganjur": "Kementerian Kemajuan Luar Bandar dan Wilayah",
+        "jam_kredit": "14 Jam CPD"
+      }
+    ]
+  },
+  {
+    "ic": "880215086677",
+    "nama": "Siti Nurhaliza binti Zakaria",
+    "emel": "siti.nurhaliza@email.com",
+    "kursus": [
+      {
+        "id": "KKS2-2024-002",
+        "nama_kursus": "Bengkel Peningkatan Kompetensi Pegawai Tadbir",
+        "tarikh_mula": "2024-04-15",
+        "tarikh_tamat": "2024-04-17",
+        "tempat": "Shah Alam",
+        "penganjur": "Kementerian Kemajuan Luar Bandar dan Wilayah",
+        "jam_kredit": "21 Jam CPD"
+      }
+    ]
+  },
+  {
+    "ic": "951130121234",
+    "nama": "Muhammad Haziq bin Rosli",
+    "emel": "haziq.rosli@email.com",
+    "kursus": [
+      {
+        "id": "KKS2-2024-003",
+        "nama_kursus": "Kursus Integriti dan Tadbir Urus",
+        "tarikh_mula": "2024-05-06",
+        "tarikh_tamat": "2024-05-07",
+        "tempat": "Cyberjaya",
+        "penganjur": "Kementerian Kemajuan Luar Bandar dan Wilayah",
+        "jam_kredit": "14 Jam CPD"
+      },
+      {
+        "id": "KKS2-2024-020",
+        "nama_kursus": "Program Kesejahteraan dan Produktiviti Pekerja",
+        "tarikh_mula": "2024-09-03",
+        "tarikh_tamat": "2024-09-04",
+        "tempat": "Putrajaya",
+        "penganjur": "Kementerian Kemajuan Luar Bandar dan Wilayah",
+        "jam_kredit": "14 Jam CPD"
+      },
+      {
+        "id": "KKS2-2025-005",
+        "nama_kursus": "Latihan Kemahiran Komunikasi Berkesan",
+        "tarikh_mula": "2025-01-20",
+        "tarikh_tamat": "2025-01-21",
+        "tempat": "Kuala Lumpur",
+        "penganjur": "Kementerian Kemajuan Luar Bandar dan Wilayah",
+        "jam_kredit": "14 Jam CPD"
+      }
+    ]
+  }
+]

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>e-Sijil KKS2 | Kementerian Kemajuan Luar Bandar dan Wilayah</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo-wrap">
+        <!-- Placeholder logo SVG -->
+        <svg class="logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="8" fill="#f5d97a"/>
+          <path d="M8 36L24 12L40 36H8Z" fill="#1a3a6b"/>
+          <rect x="20" y="26" width="8" height="10" fill="#f5d97a"/>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-kklw">KKLW</span>
+          <span class="logo-full">Kementerian Kemajuan Luar Bandar dan Wilayah</span>
+        </div>
+      </div>
+      <div class="header-title">
+        <h1>e-<span>Sijil</span> KKS2</h1>
+        <p>Sistem Muat Turun Sijil Elektronik</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ MAIN ════════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- ── LANGKAH 1: Maklumat Peserta ────────────────────────────────── -->
+    <section id="seksyen-carian" class="card">
+      <div class="card-header">
+        <div class="step-badge">1</div>
+        <h2>Pengesahan Identiti Peserta</h2>
+      </div>
+      <p class="card-desc">
+        Masukkan No. Kad Pengenalan dan alamat emel yang didaftarkan semasa program/kursus.
+        Kod pengesahan sementara akan dihantar ke emel anda.
+      </p>
+
+      <form id="form-minta-otp" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ic">No. Kad Pengenalan <span class="req">*</span></label>
+            <input
+              type="text"
+              id="ic"
+              name="ic"
+              placeholder="Contoh: 900101015555"
+              maxlength="14"
+              autocomplete="off"
+              required
+            />
+            <span class="field-hint">Tanpa tanda sempang (-)</span>
+          </div>
+          <div class="form-group">
+            <label for="emel">Alamat Emel <span class="req">*</span></label>
+            <input
+              type="email"
+              id="emel"
+              name="emel"
+              placeholder="Contoh: nama@email.com"
+              autocomplete="off"
+              required
+            />
+          </div>
+        </div>
+
+        <div id="blok-otp" class="otp-block hidden">
+          <label for="kod-otp">Kod Pengesahan (OTP) <span class="req">*</span></label>
+          <div class="otp-row">
+            <input
+              type="text"
+              id="kod-otp"
+              name="kod_otp"
+              placeholder="Masukkan 6 digit kod"
+              maxlength="6"
+              autocomplete="off"
+            />
+            <button type="button" id="btn-hantar-semula" class="btn btn-ghost">
+              Hantar Semula
+            </button>
+          </div>
+          <span class="field-hint" id="hint-otp">Kod sah selama 10 minit. Semak folder Inbox atau Spam.</span>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" id="btn-submit" class="btn btn-primary">
+            <span id="btn-label-submit">Dapatkan Kod Pengesahan</span>
+            <span id="btn-spinner" class="spinner hidden"></span>
+          </button>
+        </div>
+      </form>
+
+      <div id="mesej-maklumbalas" class="alert hidden"></div>
+    </section>
+
+    <!-- ── LANGKAH 2: Senarai Kursus ──────────────────────────────────── -->
+    <section id="seksyen-hasil" class="card hidden">
+      <div class="card-header">
+        <div class="step-badge">2</div>
+        <h2>Senarai Program / Kursus</h2>
+      </div>
+
+      <div id="info-peserta" class="peserta-banner">
+        <div class="peserta-avatar" id="peserta-avatar-initial"></div>
+        <div>
+          <p class="peserta-nama" id="papar-nama"></p>
+          <p class="peserta-ic" id="papar-ic"></p>
+        </div>
+      </div>
+
+      <p class="card-desc">Klik <strong>"Muat Turun e-Sijil"</strong> untuk muat turun sijil dalam format PDF.</p>
+
+      <div id="senarai-kursus" class="kursus-grid"></div>
+
+      <div class="form-actions">
+        <button type="button" id="btn-cari-lagi" class="btn btn-ghost">
+          ← Kembali / Cari Semula
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <p>© <span id="tahun-footer"></span> Kementerian Kemajuan Luar Bandar dan Wilayah (KKLW)</p>
+    <p class="footer-note">Sistem e-Sijil KKS2 • Semua hak terpelihara</p>
+  </footer>
+
+  <!-- ══ MODAL MUAT TURUN ═══════════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v12M8 10l4 4 4-4M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2"/>
+        </svg>
+      </div>
+      <h3 id="modal-tajuk">Sedang Menjana Sijil…</h3>
+      <p id="modal-mesej">Sila tunggu sebentar. Sijil PDF anda sedang disediakan.</p>
+      <div id="modal-spinner" class="modal-spinner"></div>
+      <button id="modal-tutup" class="btn btn-primary hidden">Tutup</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

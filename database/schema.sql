@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS kursus (
   tempat       VARCHAR(150) NOT NULL DEFAULT '' COMMENT 'Lokasi kursus',
   penganjur    VARCHAR(200) NOT NULL DEFAULT 'Kolej Komuniti Segamat 2',
   jam_kredit   VARCHAR(50)  NOT NULL DEFAULT '' COMMENT 'cth: 21 Jam CPD',
+  jenis        ENUM('online','bersemuka') NOT NULL DEFAULT 'bersemuka',
+  tempoh       VARCHAR(50)  NULL COMMENT 'cth: 3 Jam / 2 Hari',
   aktif        TINYINT(1)   NOT NULL DEFAULT 1,
   created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -54,6 +56,26 @@ CREATE TABLE IF NOT EXISTS pendaftaran (
   FOREIGN KEY fk_peserta (peserta_id) REFERENCES peserta(id) ON DELETE CASCADE,
   FOREIGN KEY fk_kursus  (kursus_id)  REFERENCES kursus(id)  ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='Pendaftaran peserta ke kursus';
+
+-- ── Jadual: template_sijil ───────────────────────────────────────────────────
+-- Tetapan template sijil PDF (latar + tandatangan)
+CREATE TABLE IF NOT EXISTS template_sijil (
+  id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  jenis            ENUM('online','bersemuka') NOT NULL,
+  nama             VARCHAR(100)  NOT NULL DEFAULT 'Template Sijil',
+  latar_fail       VARCHAR(255)  NULL COMMENT 'Nama fail imej latar (PNG/JPG)',
+  tandatangan_fail VARCHAR(255)  NULL COMMENT 'Nama fail imej tandatangan',
+  nama_pengarah    VARCHAR(150)  NOT NULL DEFAULT 'NOR DALILA BINTI ABD RAHMAN',
+  jawatan_pengarah VARCHAR(150)  NOT NULL DEFAULT 'PENGARAH',
+  nama_organisasi  VARCHAR(200)  NOT NULL DEFAULT 'KOLEJ KOMUNITI SEGAMAT 2',
+  aktif            TINYINT(1)    NOT NULL DEFAULT 1,
+  updated_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_jenis (jenis)
+) ENGINE=InnoDB COMMENT='Tetapan template sijil PDF';
+
+INSERT IGNORE INTO template_sijil (jenis, nama) VALUES
+  ('online',    'Template Sijil Kursus Online'),
+  ('bersemuka', 'Template Sijil Kursus Bersemuka');
 
 -- ── Jadual: otp_log ──────────────────────────────────────────────────────────
 -- Log OTP yang dihantar (untuk audit dan keselamatan)

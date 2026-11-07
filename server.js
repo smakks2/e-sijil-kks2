@@ -4,8 +4,9 @@ const express    = require('express');
 const nodemailer = require('nodemailer');
 const path       = require('path');
 const mysql      = require('mysql2/promise');
-const bcrypt     = require('bcryptjs');
-const adminRoute = require('./routes/admin');
+const bcrypt        = require('bcryptjs');
+const adminRoute    = require('./routes/admin');
+const templateRoute = require('./routes/template');
 const { janaSijilPDF } = require('./templates/sijil');
 
 const app  = express();
@@ -14,7 +15,9 @@ const PORT = process.env.PORT || 3000;
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/admin', adminRoute);
+app.use('/api/template', templateRoute);
 
 // ── Sambungan Database MySQL ─────────────────────────────────────────────────
 const db = mysql.createPool({
@@ -277,8 +280,16 @@ app.get('/api/muat-turun/:kursusId', async (req, res) => {
     return res.status(404).json({ mesej: 'Kursus tidak dijumpai untuk peserta ini.' });
   }
 
+  // Ambil template dari DB berdasarkan jenis kursus
+  let tmpl = null;
   try {
-    janaSijilPDF(peserta, kursus, res);
+    const jenis = kursus.jenis || 'bersemuka';
+    const [[row]] = await db.execute('SELECT * FROM template_sijil WHERE jenis=?', [jenis]);
+    tmpl = row || null;
+  } catch (_) {}
+
+  try {
+    janaSijilPDF(peserta, kursus, tmpl, res);
   } catch (err) {
     console.error('[PDF] Gagal jana sijil:', err.message);
     res.status(500).json({ mesej: 'Gagal menjana sijil PDF.' });
